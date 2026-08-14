@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, ShieldCheck, Search, Star } from 'lucide-react';
 import SafeImage from '../SafeImage';
 
-const HeroSection = () => {
+const HeroSection = ({ stats, loading }) => {
   return (
     <section id="discover" className="pt-12 sm:pt-16 pb-16 sm:pb-24 bg-[#F7F6F1] relative overflow-hidden text-left text-[#171A18]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -47,19 +47,31 @@ const HeroSection = () => {
             {/* Real Database Platform Stats Row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-[#E2E5DF] text-xs">
               <div>
-                <span className="text-2xl font-black text-[#173D32] block">3</span>
+                <span className="text-2xl font-black text-[#173D32] block">
+                  {loading ? <span className="animate-pulse">...</span> : (stats?.businesses ?? 0)}
+                </span>
                 <span className="text-[#707873] font-medium">Businesses</span>
               </div>
               <div>
-                <span className="text-2xl font-black text-[#C9A24A] block">6</span>
+                <span className="text-2xl font-black text-[#C9A24A] block">
+                  {loading ? <span className="animate-pulse">...</span> : (stats?.ratings ?? 0)}
+                </span>
                 <span className="text-[#707873] font-medium">Ratings</span>
               </div>
               <div>
-                <span className="text-2xl font-black text-[#173D32] block">9</span>
+                <span className="text-2xl font-black text-[#173D32] block">
+                  {loading ? <span className="animate-pulse">...</span> : (stats?.users ?? 0)}
+                </span>
                 <span className="text-[#707873] font-medium">Users</span>
               </div>
               <div>
-                <span className="text-2xl font-black text-[#C9A24A] block">4.7 ★</span>
+                <span className="text-2xl font-black text-[#C9A24A] block">
+                  {loading ? (
+                    <span className="animate-pulse">...</span>
+                  ) : (
+                    `${Number(stats?.averageRating ?? 0).toFixed(1)} ★`
+                  )}
+                </span>
                 <span className="text-[#707873] font-medium">Avg Rating</span>
               </div>
             </div>
@@ -110,4 +122,3 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
-

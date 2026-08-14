@@ -1,28 +1,28 @@
 import React from 'react';
 import { Users, Store, Star, Award } from 'lucide-react';
 
-const TrustMetrics = () => {
+const TrustMetrics = ({ stats, loading }) => {
   const metrics = [
     {
-      value: '3',
+      value: loading ? '...' : String(stats?.businesses ?? 0),
       label: 'VERIFIED BUSINESSES',
       detail: 'Curated store directory listings',
       icon: Store,
     },
     {
-      value: '6',
+      value: loading ? '...' : String(stats?.ratings ?? 0),
       label: 'CUSTOMER RATINGS',
       detail: 'Authentic 1–5 star reviews',
       icon: Star,
     },
     {
-      value: '9',
+      value: loading ? '...' : String(stats?.users ?? 0),
       label: 'PLATFORM USERS',
       detail: 'Registered consumers & store owners',
       icon: Users,
     },
     {
-      value: '4.7',
+      value: loading ? '...' : Number(stats?.averageRating ?? 0).toFixed(1),
       label: 'PLATFORM AVERAGE',
       detail: '5.0 rating score benchmark',
       icon: Award,
@@ -39,7 +39,7 @@ const TrustMetrics = () => {
               <div key={idx} className="p-5 bg-[#F7F6F1] border border-[#E2E5DF] rounded-2xl space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-display text-3xl sm:text-4xl font-bold text-[#173D32]">
-                    {item.value}
+                    {loading ? <span className="animate-pulse">{item.value}</span> : item.value}
                   </span>
                   <div className="p-2 bg-white rounded-xl border border-[#E2E5DF] text-[#173D32]">
                     <IconComponent className="w-4 h-4 text-[#C9A24A]" />

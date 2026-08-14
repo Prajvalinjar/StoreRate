@@ -4,6 +4,7 @@ const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const userStoreRoutes = require('./routes/userStoreRoutes');
 const ownerRoutes = require('./routes/ownerRoutes');
+const publicRoutes = require('./routes/publicRoutes');
 
 const app = express();
 
@@ -18,6 +19,10 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Public statistics routes (no auth required)
+app.use('/api/public', publicRoutes);
+app.use('/api/stats', publicRoutes);
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
