@@ -1,124 +1,177 @@
 # StoreRate
 
-> **Discover better businesses. Share real experiences. Build trust.**
-
 A full-stack store discovery and reputation platform that connects consumers with local businesses through transparent ratings and authentic customer feedback across three distinct user roles (**`USER`**, **`STORE_OWNER`**, **`ADMIN`**).
 
-`React 18` • `Vite 5` • `Node.js` • `Express.js` • `PostgreSQL` • `Prisma ORM` • `JWT` • `TailwindCSS`
+---
+
+## 🚀 Live Demo
+
+**Frontend:** https://storerate-tau.vercel.app/
+
+**Backend API:** https://storerate-backend-nbjm.onrender.com
+
+**Health Check:** https://storerate-backend-nbjm.onrender.com/api/health
 
 ---
 
-![StoreRate Landing Page](docs/screenshots/landing-page.png)
+## 🧪 Evaluator Guide
+
+### Step 1
+Open:
+https://storerate-tau.vercel.app/
+
+### Step 2
+Use one of the demo accounts.
+
+### Step 3
+Recommended exploration order:
+
+1. **USER**
+   - Browse stores
+   - Search stores
+   - View ratings
+   - Submit/update rating
+   - View profile
+
+2. **STORE OWNER**
+   - Open dashboard
+   - View rating distribution
+   - View rating trend
+   - View customer ratings
+   - View store information
+
+3. **ADMIN**
+   - Open admin dashboard
+   - View platform statistics
+   - Manage users
+   - Manage stores
+   - Explore filtering/sorting
+   - Review platform data
 
 ---
 
-## ⚡ Quick Project Snapshot
+## 🔑 Demo Credentials
 
-| Area | Implementation |
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@storerate.local` | `Admin@123` |
+| Store Owner | `owner@storerate.local` | `Owner@123` |
+| User | `user@storerate.local` | `User@123` |
+
+> These are seeded demonstration credentials intended for evaluation purposes. They are not production credentials.
+
+---
+
+## 🎯 Problem
+
+Traditional review portals frequently suffer from unverified noise, lack of transparent business metrics, or rigid threshold requirements that obscure early-stage ratings for small businesses. Consumers need a trustworthy platform to explore local stores and leave authentic feedback, while business owners require real-time reputation analytics without artificial 5-rating minimum hurdles.
+
+---
+
+## 💡 Solution
+
+**StoreRate** delivers a full-stack, role-tailored platform featuring:
+- **Consumer Portal**: Instant store discovery, multi-field search, and single-rating enforcement per user-store pair to prevent manipulation.
+- **Store Owner Business Intelligence**: Real-time score distributions, verified rater feeds, and dynamic small-dataset SVG time-series trends.
+- **System Admin Operations**: Platform-wide metrics, user/store CRUD management, and dual-direction multi-field filtering and sorting.
+
+---
+
+## ✨ Features
+
+### 👤 Consumer (`USER`)
+- **Store Browser & Search**: Instant case-insensitive filtering by Store Name or Address.
+- **Authentic 1–5 Star Ratings**: Submit and edit ratings dynamically without duplicate rows.
+- **Rating History Timeline**: Dedicated personal dashboard displaying past rating submissions and timestamps.
+- **Profile Management**: Personal account details and password change workflows.
+
+### 🏪 Store Owner (`STORE_OWNER`)
+- **Reputation Telemetry**: Key metrics showing Average Rating, Total Reviews, 5-Star Ratio, and Positive Reviews %.
+- **Rating Distribution**: Mathematical count and percentage distribution bars across 1★ to 5★ scores.
+- **Small-Dataset Rating Trend Timeline**: Time-series SVG chart plotting ratings dynamically for small datasets without artificial minimum review counts.
+- **Verified Rater Feed**: Real-time listing of customer scores and submission timestamps.
+
+### 🛡️ System Admin (`ADMIN`)
+- **Operations Console**: Dedicated sidebar for Platform Overview, User Operations, Store Operations, and Admin Profile.
+- **Platform Analytics**: Real-time database metrics for Total Users, Total Stores, Total Ratings, and Platform Mean Rating.
+- **User & Store CRUD**: Account creation and store registration linked to verified owners.
+- **Multi-Field Filter & Sort**: Search users/stores across multiple attributes with dual-direction (`asc` / `desc`) sorting.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 18 + Vite 5 + TailwindCSS 3.4 |
-| **Backend** | Node.js + Express.js REST API |
-| **Database** | PostgreSQL 15+ |
-| **ORM** | Prisma ORM 5 |
-| **Authentication** | JWT (JSON Web Tokens) + `bcryptjs` Password Hashing |
-| **Role Architecture** | **`USER`** (Consumer) • **`STORE_OWNER`** (Business Owner) • **`ADMIN`** (Operator) |
-| **Rating System** | 1–5 Stars (Integer), Enforced Single Rating per User-Store Pair |
-| **Business Intelligence** | 5★–1★ Distribution Bars + Dynamic Small-Dataset SVG Trend Timeline |
-| **Admin Operations** | Multi-Field Search/Filter + Dual-Direction Sorting (`asc` / `desc`) |
-| **Test Verification** | 6 Integration Test Suites (**86 / 86 Total Test Cases PASS**) |
-| **Production Build** | Verified clean build via `npm run build` (**0 errors**, 2.28s) |
+| **Frontend** | React 18, Vite 5, TailwindCSS 3.4, Lucide React, React Router 6 |
+| **Backend** | Node.js, Express.js REST API |
+| **Database & ORM** | PostgreSQL 15+, Prisma ORM 5 |
+| **Authentication & Security** | JWT (JSON Web Tokens), `bcryptjs` password hashing, Zod validation |
+| **Testing** | Automated Integration Test Suite (Node.js test runners) |
+| **Deployment** | Vercel (Frontend SPA), Render (Backend Web Service), Managed PostgreSQL |
 
 ---
 
-## 🎯 Why StoreRate Exists
+## 🏗️ Architecture
 
-Traditional review platforms often bombard users with unverified marketing noise or rigid minimum thresholds that hide small business ratings. **StoreRate** provides a transparent, role-tailored platform for all stakeholders:
-
-- 👤 **Consumer**: **Discover** stores → **Compare** ratings → **Submit & Update** authentic 1–5 star reviews.
-- 🏪 **Store Owner**: **Monitor** reputation → **Understand** customer breakdown → **Improve** service quality.
-- 🛡️ **Administrator**: **Manage** users & stores → **Analyze** platform metrics → **Enforce** data integrity.
-
----
-
-## 🏗️ System Architecture & Data Flow
-
-```mermaid
-flowchart LR
-    subgraph Client ["Client Layer"]
-        A[React 18 + Vite Frontend]
-    end
-
-    subgraph Server ["Server Layer"]
-        B[Express.js REST API Router]
-        C[Zod Validation & RBAC Middleware]
-        D[JWT Authentication Service]
-    end
-
-    subgraph Data ["Data Layer"]
-        E[Prisma ORM]
-        F[(PostgreSQL Database)]
-    end
-
-    A -->|HTTP / REST API| B
-    B --> C
-    C --> D
-    C --> E
-    E --> F
+```
+                  ┌────────────────────────┐
+                  │    React 18 + Vite     │
+                  │   Vercel Frontend SPA  │
+                  └───────────┬────────────┘
+                              │
+                              │ HTTP / REST API (JWT Bearer Token)
+                              ▼
+                  ┌────────────────────────┐
+                  │   Express.js Router    │
+                  │ Zod Validation & RBAC  │
+                  └───────────┬────────────┘
+                              │
+                              │ Prisma ORM
+                              ▼
+                  ┌────────────────────────┐
+                  │   PostgreSQL Database  │
+                  └────────────────────────┘
 ```
 
-### Role-Based Access Control (RBAC)
-- **Backend Enforced**: Routes are guarded by `requireAuth` and `requireRole('ADMIN' | 'STORE_OWNER' | 'USER')`.
-- **Frontend Enforced**: Client routing is isolated via `<ProtectedRoute>` and `<RoleRoute>` guards.
-
 ---
 
-## ✨ Core Product Features (By Role)
+## 🗄️ Database Design
 
-### 👤 1. Normal User (`USER`)
-- **Store Browser & Search**: Instant case-insensitive keyword search by Store Name or Address.
-- **Authentic 1–5 Star Ratings**: View store average ratings and submit ratings from 1 to 5 stars.
-- **Rating Updates**: Updating a rating modifies the existing record seamlessly without creating duplicate rows.
-- **My Ratings History**: Dedicated timeline listing all rated stores, scores, timestamps, and quick edit options.
-- **User Profile**: Personal account details, security options, and password update flow.
+StoreRate uses Prisma ORM with PostgreSQL. The database schema defines three core models: `User`, `Store`, and `Rating`.
 
-![User Store Discovery](docs/screenshots/user-stores.png)
-*User Store Browser with instant search filtering*
+### Database Schema Models (`prisma/schema.prisma`)
 
-![User Profile](docs/screenshots/user-profile.png)
-*User Account Profile & Rating Activity*
-
----
-
-### 🏪 2. Store Owner Intelligence (`STORE_OWNER`)
-- **Reputation Telemetry**: KPI overview displaying Average Rating, Total Reviews, 5-Star Ratio, and Positive Reviews %.
-- **Rating Distribution**: Mathematically exact count and percentage distribution bars for 5★ down to 1★.
-- **Small-Dataset Rating Trend Timeline**: Time-series SVG line chart that dynamically plots ratings for small datasets (1, 2, 3, 4, 5+ ratings) without artificial 5-rating minimum thresholds.
-- **Customer Rater Feed**: Real-time listing of verified rater names, scores, and submission timestamps.
-- **Data Isolation**: Store Owners can strictly access data for their assigned store.
-
-![Store Owner Dashboard](docs/screenshots/owner-dashboard.png)
-*Store Owner Reputation Analytics & Rater Feed*
-
----
-
-### 🛡️ 3. Administrator Operations (`ADMIN`)
-- **Operations Console**: Dedicated sidebar navigation for Overview, User Operations, Store Operations, and Admin Profile.
-- **Platform Analytics**: Real-time database metrics for Total Users, Total Stores, Total Ratings, and Average Platform Rating.
-- **User & Store Operations**: Create `USER`, `STORE_OWNER`, and `ADMIN` accounts and register stores linked to verified owners.
-- **Multi-Field Filtering & Sorting**: Filter users/stores by Name, Email, Address, or Role, and sort by key fields in ascending (`asc`) or descending (`desc`) order.
-- **Associated Store Intelligence**: Viewing a `STORE_OWNER` profile displays their linked store rating telemetry.
-
-![Admin Operations Console](docs/screenshots/admin-dashboard.png)
-*Admin Operations Console & User Management*
-
----
-
-## ⭐ Rating Architecture & Database Constraints
-
-StoreRate enforces a strict **Single-Rating Constraint** per user-store pair to eliminate rating manipulation.
-
-### Database Schema Constraint (`schema.prisma`)
 ```prisma
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  address      String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  stores       Store[]  @relation("OwnerStores")
+  ratings      Rating[]
+}
+
+model Store {
+  id          String   @id @default(uuid())
+  name        String
+  email       String
+  address     String
+  ownerId     String
+  owner       User     @relation("OwnerStores", fields: [ownerId], references: [id], onDelete: Cascade)
+  rating      Float    @default(0.0)
+  totalRating Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ratings     Rating[]
+}
+
 model Rating {
   id        String   @id @default(uuid())
   userId    String
@@ -134,92 +187,164 @@ model Rating {
   @@index([storeId])
   @@map("ratings")
 }
+
+enum Role {
+  ADMIN
+  STORE_OWNER
+  USER
+}
 ```
 
-- **Uniqueness Guarantee**: The composite index `@@unique([userId, storeId])` prevents duplicate database entries.
-- **Upsert Execution**: When a user submits an updated rating, `userStoreService.js` updates the existing record via `userId_storeId` lookup, automatically triggering store average recalculation.
+### Unique Constraint & Rating Upsert Logic
+The database model includes a composite unique index:
+```prisma
+@@unique([userId, storeId])
+```
+- **Single-Rating Guarantee**: Prevents duplicate rating submissions by the same user for the same store at the database engine level.
+- **Seamless Rating Updates**: Submitting a new score for an existing store updates the existing record via `userId_storeId` lookup, recalculating the store average rating automatically.
 
 ---
 
-## 📏 Validation Rules
+## 🔐 Authentication & Security
 
-All API requests are validated through Zod schema middleware before reaching business logic handlers:
+### Role-Based Access Control (RBAC) Matrix
 
-| Entity / Field | Constraint | Enforced Validator |
-| :--- | :--- | :--- |
-| **User Name** | **20 to 60 characters** (Min 20, Max 60) | `authValidator.js`, `adminValidator.js` |
-| **Address** | **Maximum 400 characters** | `authValidator.js`, `adminValidator.js` |
-| **Password** | **8 to 16 characters**, min 1 uppercase (`/[A-Z]/`), min 1 special char (`/[^a-zA-Z0-9]/`) | `authValidator.js`, `adminValidator.js` |
-| **Rating** | **Integer 1 to 5** (Decimals, 0, >5 rejected) | `userStoreValidator.js` |
-| **Email** | Valid RFC 5322 email format | `authValidator.js`, `adminValidator.js` |
+| Capability | USER | STORE_OWNER | ADMIN |
+|---|:---:|:---:|:---:|
+| Browse Stores | ✓ | — | ✓ |
+| Submit Rating | ✓ | — | ✓ |
+| Update Own Rating | ✓ | — | ✓ |
+| View Own Profile | ✓ | ✓ | ✓ |
+| Store Analytics | — | ✓ | ✓ |
+| Manage Users | — | — | ✓ |
+| Manage Stores | — | Own Store | ✓ |
+| Platform Operations | — | — | ✓ |
 
----
-
-## 🔒 Security Implementation
-
-- **Password Hashing**: Passwords stored as `bcryptjs` hashes with salt rounds.
-- **Sensitive Field Protection**: `passwordHash` is omitted from all API responses.
-- **JWT Authentication**: Tokens signed with server `JWT_SECRET` and transmitted via HTTP Headers (`Authorization: Bearer <token>`).
-- **Owner Data Isolation**: Backend queries automatically scope store owner metrics to `where: { ownerId: req.user.id }`.
-- **Protected Environment**: Secret values strictly ignored via `.gitignore`.
+### Security Measures
+- **Password Hashing**: Passwords stored using `bcryptjs` with salt rounds. `passwordHash` is excluded from all API outputs.
+- **JWT Authorization**: Authenticated API endpoints verify tokens passed via the `Authorization: Bearer <token>` HTTP header.
+- **Owner Data Isolation**: Store Owner queries are strictly scoped on the backend to `where: { ownerId: req.user.id }`.
 
 ---
 
-## 🔑 Demo Environment & Credentials
+## 📋 Validation Rules
 
-> [!NOTE]
-> **LOCAL / DEMO ENVIRONMENT CREDENTIALS**
+All incoming request payloads are validated via Zod schema middleware prior to executing route handlers:
 
-| Role | Email | Password | Access / Assigned Entity |
+| Field | Rule |
+|---|---|
+| Name | 20–60 characters |
+| Address | Maximum 400 characters |
+| Password | 8–16 characters |
+| Password | At least one uppercase character |
+| Password | At least one special character |
+| Email | Valid email format |
+| Rating | Integer from 1–5 |
+
+---
+
+## 🔎 Search, Filtering & Sorting
+
+- **Consumer Search**: Instant search by Store Name or Store Address (case-insensitive).
+- **Admin User Management**: Filter by Name, Email, Address, or Role (`USER`, `STORE_OWNER`, `ADMIN`). Sort by Name, Email, Role, or Date in ascending (`asc`) or descending (`desc`) direction.
+- **Admin Store Operations**: Search by Store Name, Email, or Address. Sort by Name, Rating, or Total Reviews.
+
+---
+
+## 📁 Project Structure
+
+```text
+StoreRate/
+├── README.md
+├── package.json
+├── docs/
+│   ├── DEPLOYMENT.md
+│   └── screenshots/
+│       ├── landing-page.png
+│       ├── user-stores.png
+│       ├── user-profile.png
+│       ├── owner-dashboard.png
+│       └── admin-dashboard.png
+├── backend/
+│   ├── package.json
+│   ├── .env.example
+│   ├── prisma/
+│   │   └── schema.prisma
+│   └── src/
+│       ├── app.js
+│       ├── server.js
+│       ├── controllers/
+│       ├── middleware/
+│       ├── routes/
+│       ├── scripts/
+│       ├── services/
+│       └── validators/
+└── frontend/
+    ├── package.json
+    ├── .env.example
+    ├── vite.config.js
+    ├── tailwind.config.js
+    └── src/
+        ├── App.jsx
+        ├── components/
+        ├── context/
+        ├── pages/
+        └── services/
+```
+
+---
+
+## 🔌 API Overview
+
+| Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
-| **System Administrator** | `admin@storerate.local` | `Admin@123` | Platform Operations Console |
-| **Primary Store Owner** | `owner@storerate.local` | `Owner@123` | Demo StoreRate Market (`4.7 ★`) |
-| **FreshMart Store Owner** | `owner2@storerate.local` | `Owner@123` | FreshMart Grocery Store (`4.0 ★`) |
-| **Electronics Store Owner** | `owner3@storerate.local` | `Owner@123` | City Electronics Superstore (`5.0 ★`) |
-| **Normal Consumer 1** | `user@storerate.local` | `User@123` | Consumer Portal |
-| **Normal Consumer 2** | `user2@storerate.local` | `User@123` | Consumer Portal |
-| **Normal Consumer 3** | `user3@storerate.local` | `User@123` | Consumer Portal |
-
-### Seeded Baseline Metrics
-- **Users**: `9`
-- **Stores**: `3`
-- **Ratings**: `6`
-
----
-
-## 🧪 Test Suite & Quality Verification
-
-StoreRate includes six comprehensive automated integration test suites:
-
-| Test Suite | Domain Covered | Executed Tests | Result |
-| :--- | :--- | :--- | :--- |
-| `testAuth.js` | Authentication, JWT, Name Boundaries (20–60 chars), Password Rules | 19 / 19 Passed | **PASS** |
-| `testAdmin.js` | Admin Metrics, User/Store CRUD, Filtering, Sorting, RBAC | 18 / 18 Passed | **PASS** |
-| `testUser.js` | Store Discovery, Name/Address Search, Rating Upsert, Rating Bounds | 17 / 17 Passed | **PASS** |
-| `testOwner.js` | Owner Dashboard Metrics, Small-Dataset Trend, Rater Isolation | 11 / 11 Passed | **PASS** |
-| `testMasterQA.js` | End-to-End Multi-Role System Quality & Security Audit | 14 / 14 Passed | **PASS** |
-| `verifySeed.js` | Seed Dataset Credentials & Portal Access Validation | 7 / 7 Passed | **PASS** |
-| **Total Automated Tests** | **Full System Audit** | **86 / 86 Passed** | **`PASS (100%)`** |
-
-*Manual acceptance testing was also executed across USER, STORE_OWNER, ADMIN, security isolation, rating updates, small-dataset trends, search/filtering/sorting, responsive UI, and landing page asset resilience.*
+| `GET` | `/api/health` | Public | Backend service health status |
+| `POST` | `/api/auth/register` | Public | Register new consumer account |
+| `POST` | `/api/auth/login` | Public | Authenticate user & return JWT token |
+| `GET` | `/api/auth/me` | Authenticated | Retrieve authenticated user profile |
+| `POST` | `/api/auth/change-password` | Authenticated | Change user account password |
+| `GET` | `/api/stores` | `USER`, `ADMIN` | Search & list stores |
+| `POST` | `/api/stores/:id/rating` | `USER`, `ADMIN` | Submit rating (1–5 stars) |
+| `PUT` | `/api/stores/:id/rating` | `USER`, `ADMIN` | Update existing rating (1–5 stars) |
+| `GET` | `/api/stores/my-ratings` | `USER` | List personal submitted ratings |
+| `GET` | `/api/owner/dashboard` | `STORE_OWNER` | Retrieve owner BI metrics & customer feed |
+| `GET` | `/api/admin/dashboard` | `ADMIN` | Retrieve system overview metrics |
+| `GET` | `/api/admin/users` | `ADMIN` | Search, filter & list user accounts |
+| `POST` | `/api/admin/users` | `ADMIN` | Create user account with assigned role |
+| `GET` | `/api/admin/users/:id` | `ADMIN` | Get single user details & store rating info |
+| `GET` | `/api/admin/stores` | `ADMIN` | List stores with search & sorting |
+| `POST` | `/api/admin/stores` | `ADMIN` | Create store linked to store owner |
 
 ---
 
-## 🚀 Local Installation & Setup Guide
+## ⚙️ Environment Variables
 
-### Prerequisites
-- **Node.js**: v18.x or higher
-- **PostgreSQL**: v15.x or higher (listening on port `5432`)
-- **npm**: v9.x or higher
+### Frontend (`frontend/.env`)
+```bash
+# Production API Endpoint
+VITE_API_BASE_URL=https://storerate-backend-nbjm.onrender.com/api
 
-### 1. Clone & Install Dependencies
+# Local Development Endpoint
+# VITE_API_BASE_URL=http://localhost:5000/api
+```
+
+### Backend (`backend/.env`)
+```bash
+PORT=5000
+NODE_ENV=production
+DATABASE_URL="postgresql://username:password@localhost:5432/storeratedb?schema=public"
+JWT_SECRET="replace_with_a_secure_random_jwt_secret_key"
+```
+
+---
+
+## 💻 Local Development
+
+### 1. Repository Setup & Dependencies
 ```bash
 # Clone repository
 git clone https://github.com/Prajvalinjar/StoreRate.git
 cd StoreRate
-
-# Install root scripts
-npm install
 
 # Install backend dependencies
 cd backend
@@ -230,90 +355,130 @@ cd ../frontend
 npm install
 ```
 
-### 2. Configure Environment Variables
+### 2. Configure Local Environment Files
+- Copy `backend/.env.example` to `backend/.env` and update `DATABASE_URL` and `JWT_SECRET`.
+- Copy `frontend/.env.example` to `frontend/.env`.
+
+### 3. Database Sync & Development Server
 ```bash
-# In backend/ directory
-cp .env.example .env
+# From backend directory
+npx prisma generate
+npx prisma db push
+npm run seed
 
-# Edit backend/.env with your PostgreSQL credentials
-# DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/storeratedb?schema=public"
-# JWT_SECRET="super_secret_jwt_key_store_rate"
-
-# In frontend/ directory
-cp .env.example .env
-```
-
-### 3. Setup PostgreSQL Database & Seed Data
-```bash
-cd ../backend
-
-# Run Prisma database migrations
-npx prisma migrate dev --name init
-
-# Seed the deterministic demo dataset (9 Users, 3 Stores, 6 Ratings)
-node src/scripts/seed.js
-```
-
-### 4. Run Application Development Servers
-```bash
-# Start Backend API Server (Port 5000)
-cd backend
+# Start backend server (Port 5000)
 npm run dev
 
-# In a separate terminal, start Frontend Dev Server (Port 5173 / 3000)
+# In a new terminal, start frontend dev server (Port 5173 / 3000)
 cd frontend
 npm run dev
 ```
 
 ---
 
-## 📡 API Endpoint Reference
+## 🌱 Database Seeding
 
-| Method | Endpoint | Auth / Role | Description |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Public | Register new `USER` account (min 20 char name) |
-| `POST` | `/api/auth/login` | Public | Authenticate user credentials & return JWT |
-| `GET` | `/api/auth/me` | Authenticated | Retrieve profile details of authenticated user |
-| `POST` | `/api/auth/change-password` | Authenticated | Update account password |
-| `GET` | `/api/stores` | `USER` | Search & list stores by name/address |
-| `POST` | `/api/stores/:id/rating` | `USER` | Submit initial 1–5 star rating for store |
-| `PUT` | `/api/stores/:id/rating` | `USER` | Update existing 1–5 star rating for store |
-| `GET` | `/api/stores/my-ratings` | `USER` | List personal submitted ratings |
-| `GET` | `/api/owner/dashboard` | `STORE_OWNER` | Retrieve store owner BI analytics & rater feed |
-| `GET` | `/api/admin/dashboard` | `ADMIN` | Retrieve platform-wide metrics & leaderboard |
-| `GET` | `/api/admin/users` | `ADMIN` | List users with filtering, sorting, & pagination |
-| `POST` | `/api/admin/users` | `ADMIN` | Create user account (`USER`, `STORE_OWNER`, `ADMIN`) |
-| `GET` | `/api/admin/users/:id` | `ADMIN` | Retrieve single user & assigned store rating data |
-| `GET` | `/api/admin/stores` | `ADMIN` | List stores with filtering & rating sorting |
-| `POST` | `/api/admin/stores` | `ADMIN` | Create store linked to a `STORE_OWNER` |
+Seed the database with deterministic baseline accounts and demo stores:
+
+```bash
+cd backend
+npm run seed
+```
+
+This creates `9` users, `3` stores, and `6` initial verified ratings.
 
 ---
 
-## 🌟 Key Differentiators
+## ☁️ Production Deployment
 
-1. **Role-Tailored Portals**: Distinct experiences designed specifically for Consumers, Business Owners, and Operators.
-2. **PostgreSQL Unique Constraint Integrity**: `@@unique([userId, storeId])` prevents rating duplicate records at the database engine level.
-3. **Small-Dataset Rating Trend Timeline**: Dynamic SVG line graph that correctly visualizes available rating data (1 to 5+ points) without artificial error thresholds.
-4. **Operations Console**: Admin table architecture featuring instant filtering across Name, Email, Address, and Role, alongside dual-direction sorting (`asc` / `desc`).
-5. **86-Point Automated Integration Suite**: Automated tests verifying auth boundaries, RBAC isolation, rating recalculations, and database cleanup.
+The project is configured for cloud deployment on Vercel and Render:
 
----
+- **Frontend (Vercel)**: Configured with `npm run build` targeting `dist/` output, using `VITE_API_BASE_URL`.
+- **Backend (Render)**: Configured with Node.js runtime and build script:
+  ```bash
+  npm install --include=dev && npx prisma generate && npx prisma db push && npm run seed
+  ```
+  and start command:
+  ```bash
+  npm start
+  ```
 
-## 🔮 Future Roadmap (Possibilities)
-
-- 📍 **Map & Geolocation Integration**: Interactive store locator and proximity search.
-- 📝 **Rich Written Reviews & Photo Uploads**: Allow customers to attach text feedback and storefront photos.
-- 🔔 **Owner Notifications**: Real-time notifications for store owners when a new rating is submitted.
-- 🛡️ **Suspicious Review Detection**: Anomaly detection for unusual rating spikes.
-
----
-
-## 📄 Documentation
-
-For full technical audit logs, code structure notes, and design evolution details, refer to [`walkthrough.md`](./walkthrough.md).
+> For step-by-step deployment instructions, view [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ---
 
-StoreRate demonstrates a complete full-stack product workflow — from consumer discovery and rating submission to business intelligence and platform administration.
+## 📸 Application Screenshots
 
-**Built with React • Node.js • Express • PostgreSQL • Prisma**
+### Landing Page
+
+![StoreRate Landing Page](docs/screenshots/landing-page.png)
+*Public store discovery portal & community telemetry statistics.*
+
+### User Store Discovery
+
+![StoreRate User Store Discovery](docs/screenshots/user-stores.png)
+*Consumer store browser with instant multi-field search and rating submit/update modal.*
+
+### User Profile
+
+![StoreRate User Profile](docs/screenshots/user-profile.png)
+*User profile telemetry, submitted rating history timeline, and account security options.*
+
+### Store Owner Dashboard
+
+![StoreRate Owner Dashboard](docs/screenshots/owner-dashboard.png)
+*Business intelligence dashboard with score breakdown, rating metrics, and dynamic SVG trend chart.*
+
+### Admin Dashboard
+
+![StoreRate Admin Dashboard](docs/screenshots/admin-dashboard.png)
+*Platform operations console featuring user/store metrics, role breakdown, and leaderboard.*
+
+---
+
+## 🧪 Testing & Verification
+
+StoreRate includes comprehensive automated integration test suites:
+
+- **Authentication Suite**: `19 / 19` PASS
+- **Admin Operations Suite**: `18 / 18` PASS
+- **User Discovery & Rating Suite**: `17 / 17` PASS
+- **Store Owner BI Suite**: `11 / 11` PASS
+- **Master QA System Audit**: `14 / 14` PASS
+- **Seed Verification Suite**: `7 / 7` PASS
+
+**Summary:** `86/86 automated verification checks passed.`
+
+### Verified Production State
+- Vercel frontend is deployed
+- Render backend is deployed
+- PostgreSQL is connected
+- Prisma database schema is deployed
+- Demo seed data is available
+- User login works
+- Store Owner dashboard works
+- Admin dashboard works
+- Store data is visible
+- Rating data is visible
+- Role-based access works
+
+---
+
+## ⚠️ Deployment Considerations
+
+- **Server Warm-Up**: Render free-tier web services spin down after inactivity. Initial API requests may experience a short cold-start latency.
+- **Database Connection Pooling**: Ensure `DATABASE_URL` uses connection pooling when connecting from serverless or high-concurrency environments.
+
+---
+
+## 🔮 Future Improvements
+
+- 📍 **Geolocation & Map Search**: Interactive map pins for store discovery.
+- 📝 **Rich Written Reviews**: Text review comments and customer storefront image uploads.
+- 🔔 **Real-Time Owner Alerts**: WebSockets or email notifications on new ratings.
+
+---
+
+## 👨‍💻 Author
+
+Developed with care by **Prajval Injar**.
