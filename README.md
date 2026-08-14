@@ -261,6 +261,7 @@ StoreRate/
 │   ├── DEPLOYMENT.md
 │   └── screenshots/
 │       ├── landing-page.png
+│       ├── login.png
 │       ├── user-stores.png
 │       ├── user-profile.png
 │       ├── owner-dashboard.png
@@ -409,27 +410,32 @@ The project is configured for cloud deployment on Vercel and Render:
 
 ## 📸 Application Screenshots
 
-### Landing Page
+### 1. Landing Page
 
 ![StoreRate Landing Page](docs/screenshots/landing-page.png)
 *Public store discovery portal & community telemetry statistics.*
 
-### User Store Discovery
+### 2. User Authentication
+
+![StoreRate User Authentication](docs/screenshots/login.png)
+*Secure role-based sign-in portal for consumers, store owners, and administrators.*
+
+### 3. User Store Discovery
 
 ![StoreRate User Store Discovery](docs/screenshots/user-stores.png)
 *Consumer store browser with instant multi-field search and rating submit/update modal.*
 
-### User Profile
+### 4. User Profile
 
 ![StoreRate User Profile](docs/screenshots/user-profile.png)
 *User profile telemetry, submitted rating history timeline, and account security options.*
 
-### Store Owner Dashboard
+### 5. Store Owner Dashboard
 
 ![StoreRate Owner Dashboard](docs/screenshots/owner-dashboard.png)
 *Business intelligence dashboard with score breakdown, rating metrics, and dynamic SVG trend chart.*
 
-### Admin Dashboard
+### 6. Admin Dashboard
 
 ![StoreRate Admin Dashboard](docs/screenshots/admin-dashboard.png)
 *Platform operations console featuring user/store metrics, role breakdown, and leaderboard.*
