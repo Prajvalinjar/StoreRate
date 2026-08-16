@@ -41,6 +41,7 @@ model Store {
   email           String
   address         String
   category        String      @default("General")
+  imageUrl        String?
   status          StoreStatus @default(APPROVED)
   rejectionReason String?
   ownerId         String

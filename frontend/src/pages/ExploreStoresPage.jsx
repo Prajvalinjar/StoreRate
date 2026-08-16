@@ -257,23 +257,7 @@ const ExploreStoresPage = () => {
           </div>
 
           {/* Dropdown Filters & Sorting Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[#E2E5DF] text-xs">
-            {/* Category Dropdown */}
-            <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-[#707873] uppercase tracking-wider">
-                Category
-              </label>
-              <select
-                value={categoryParam}
-                onChange={(e) => handleCategorySelect(e.target.value)}
-                className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-3 py-2 text-xs font-medium text-[#171A18] focus:outline-none focus:border-[#173D32]"
-              >
-                <option value="All">All Categories</option>
-                {STORE_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#E2E5DF] text-xs">
 
             {/* Minimum Rating Dropdown */}
             <div className="space-y-1">

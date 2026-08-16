@@ -55,7 +55,7 @@ const StoreCard = ({ store, onRate, onViewStore }) => {
       {/* Store Header Image */}
       <div className="relative h-44 w-full bg-[#173D32] overflow-hidden">
         <SafeImage
-          src={visual.url}
+          src={store.imageUrl || visual.url}
           alt={name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
         />

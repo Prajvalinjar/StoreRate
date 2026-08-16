@@ -76,6 +76,7 @@ const getPublicStores = async ({ q, category, minRating, sort = 'recommended', p
       email: true,
       address: true,
       category: true,
+      imageUrl: true,
       status: true,
       createdAt: true,
       ratings: {
@@ -152,6 +153,7 @@ const getPublicStoreById = async (id) => {
       email: true,
       address: true,
       category: true,
+      imageUrl: true,
       status: true,
       rejectionReason: true,
       createdAt: true,

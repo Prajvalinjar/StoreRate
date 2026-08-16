@@ -273,7 +273,22 @@ const StoreProfilePage = () => {
         </Link>
 
         {/* Main Store Profile Banner */}
-        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="bg-white border border-[#E2E5DF] rounded-2xl overflow-hidden shadow-xs p-6 sm:p-8 space-y-6">
+          {/* Store Cover Header Image */}
+          <div className="relative h-56 sm:h-64 w-full bg-[#173D32] overflow-hidden -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-6">
+            <SafeImage
+              src={store.imageUrl || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80'}
+              alt={store.name}
+              className="w-full h-full object-cover opacity-90"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
+            <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-white z-10">
+              <span className="text-[10px] font-extrabold text-[#C9A24A] uppercase tracking-widest bg-[#173D32]/90 backdrop-blur-xs px-3.5 py-1.5 rounded-full border border-[#3E7D69]">
+                🏪 {store.category || 'General'}
+              </span>
+            </div>
+          </div>
+
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 border-b border-[#E2E5DF] pb-6">
             <div className="space-y-2.5">
               <div className="flex flex-wrap items-center gap-2">
