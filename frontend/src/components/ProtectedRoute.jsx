@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { RefreshCw } from 'lucide-react';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -8,11 +9,9 @@ const ProtectedRoute = ({ children }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-300">
-        <div className="flex items-center space-x-3">
-          <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          <span>Verifying authentication...</span>
-        </div>
+      <div className="min-h-screen bg-[#F7F6F1] flex flex-col items-center justify-center p-6 text-[#707873] space-y-3">
+        <RefreshCw className="w-6 h-6 animate-spin text-[#173D32]" />
+        <span className="text-xs font-medium">Verifying authentication...</span>
       </div>
     );
   }
