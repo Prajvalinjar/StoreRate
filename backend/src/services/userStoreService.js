@@ -1,4 +1,5 @@
 const prisma = require('../utils/prisma');
+const { createNotification } = require('./notificationService');
 
 class UserStoreError extends Error {
   constructor(message, statusCode) {
@@ -7,38 +8,19 @@ class UserStoreError extends Error {
   }
 }
 
-const getStoresForUser = async (userId, { name, address, q }) => {
-  const where = {
-    status: 'APPROVED',
-  };
-
-  if (q && q.trim()) {
-    const searchTerm = q.trim();
-    where.AND = [
-      {
-        OR: [
-          { name: { contains: searchTerm, mode: 'insensitive' } },
-          { address: { contains: searchTerm, mode: 'insensitive' } },
-        ],
-      },
-    ];
-  } else {
-    if (name && name.trim()) {
-      where.name = { contains: name.trim(), mode: 'insensitive' };
-    }
-    if (address && address.trim()) {
-      where.address = { contains: address.trim(), mode: 'insensitive' };
-    }
-  }
-
+const getStoresForUser = async (userId) => {
   const rawStores = await prisma.store.findMany({
-    where,
-    orderBy: { name: 'asc' },
+    where: { status: 'APPROVED' },
     select: {
       id: true,
       name: true,
-      address: true,
       email: true,
+      address: true,
+      category: true,
+      imageUrl: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
       ratings: {
         select: {
           userId: true,
@@ -107,6 +89,24 @@ const submitRating = async (userId, storeId, rating, review = null) => {
     },
   });
 
+  // Trigger notification to store owner if not rating own store
+  if (store.ownerId && store.ownerId !== userId) {
+    try {
+      const hasWrittenReview = review && review.trim().length > 0;
+      await createNotification({
+        userId: store.ownerId,
+        type: hasWrittenReview ? 'NEW_REVIEW' : 'NEW_RATING',
+        title: hasWrittenReview ? 'New Customer Review Received' : 'New Customer Rating Received',
+        message: hasWrittenReview
+          ? `A customer left a ${rating}-star review for "${store.name}".`
+          : `Your store "${store.name}" received a ${rating}-star rating.`,
+        link: '/owner',
+      });
+    } catch (err) {
+      console.error('Failed to send rating notification:', err);
+    }
+  }
+
   return newRating;
 };
 
@@ -149,52 +149,41 @@ const updateRating = async (userId, storeId, rating, review = null) => {
     },
   });
 
+  // Trigger notification to store owner
+  if (store.ownerId && store.ownerId !== userId) {
+    try {
+      const hasWrittenReview = review && review.trim().length > 0;
+      await createNotification({
+        userId: store.ownerId,
+        type: hasWrittenReview ? 'NEW_REVIEW' : 'NEW_RATING',
+        title: hasWrittenReview ? 'Customer Updated Their Review' : 'Customer Updated Their Rating',
+        message: `A customer updated their feedback for "${store.name}" to ${rating} stars.`,
+        link: '/owner',
+      });
+    } catch (err) {
+      console.error('Failed to send rating update notification:', err);
+    }
+  }
+
   return updatedRating;
 };
 
 const getUserRatings = async (userId) => {
-  const rawRatings = await prisma.rating.findMany({
+  const ratings = await prisma.rating.findMany({
     where: { userId },
-    orderBy: { updatedAt: 'desc' },
     include: {
       store: {
         select: {
           id: true,
           name: true,
           address: true,
-          email: true,
-          ratings: {
-            select: {
-              rating: true,
-            },
-          },
+          category: true,
+          imageUrl: true,
+          status: true,
         },
       },
     },
-  });
-
-  const ratings = rawRatings.map((r) => {
-    const totalRatings = r.store.ratings.length;
-    const sum = r.store.ratings.reduce((acc, curr) => acc + curr.rating, 0);
-    const averageRating = totalRatings > 0 ? Number((sum / totalRatings).toFixed(1)) : 0;
-
-    return {
-      id: r.id,
-      rating: r.rating,
-      review: r.review,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-      store: {
-        id: r.store.id,
-        name: r.store.name,
-        address: r.store.address,
-        email: r.store.email,
-        averageRating,
-        totalRatings,
-        userRating: r.rating,
-        userReview: r.review,
-      },
-    };
+    orderBy: { updatedAt: 'desc' },
   });
 
   return { ratings };

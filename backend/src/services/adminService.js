@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const { hashPassword } = require('../utils/hashUtils');
+const { createNotification } = require('./notificationService');
 
 class AdminError extends Error {
   constructor(message, statusCode) {
@@ -113,6 +114,19 @@ const approveStore = async (storeId) => {
     },
   });
 
+  // Trigger STORE_APPROVED notification to owner
+  try {
+    await createNotification({
+      userId: updatedStore.ownerId,
+      type: 'STORE_APPROVED',
+      title: 'Store Listing Approved!',
+      message: `Your store listing "${updatedStore.name}" is now live on StoreRate.`,
+      link: '/owner',
+    });
+  } catch (err) {
+    console.error('Failed to send store approval notification:', err);
+  }
+
   return updatedStore;
 };
 
@@ -137,6 +151,19 @@ const rejectStore = async (storeId, reason) => {
       },
     },
   });
+
+  // Trigger STORE_REJECTED notification to owner
+  try {
+    await createNotification({
+      userId: updatedStore.ownerId,
+      type: 'STORE_REJECTED',
+      title: 'Store Listing Update',
+      message: `Your store listing "${updatedStore.name}" was not approved.`,
+      link: '/owner',
+    });
+  } catch (err) {
+    console.error('Failed to send store rejection notification:', err);
+  }
 
   return updatedStore;
 };
@@ -442,7 +469,13 @@ const dismissReport = async (reportId, adminId) => {
 const hideReview = async (reportId, adminId) => {
   const report = await prisma.reviewReport.findUnique({
     where: { id: reportId },
-    include: { rating: true },
+    include: {
+      rating: {
+        include: {
+          store: { select: { id: true, name: true } },
+        },
+      },
+    },
   });
 
   if (!report) {
@@ -463,13 +496,32 @@ const hideReview = async (reportId, adminId) => {
     },
   });
 
+  // Trigger REVIEW_HIDDEN notification to reviewer
+  try {
+    await createNotification({
+      userId: report.rating.userId,
+      type: 'REVIEW_HIDDEN',
+      title: 'Review Moderation Update',
+      message: `Your review on "${report.rating.store.name}" was hidden by moderators.`,
+      link: '/user/ratings',
+    });
+  } catch (err) {
+    console.error('Failed to send review hidden notification:', err);
+  }
+
   return updatedReport;
 };
 
 const restoreReview = async (reportId, adminId) => {
   const report = await prisma.reviewReport.findUnique({
     where: { id: reportId },
-    include: { rating: true },
+    include: {
+      rating: {
+        include: {
+          store: { select: { id: true, name: true } },
+        },
+      },
+    },
   });
 
   if (!report) {
@@ -489,6 +541,19 @@ const restoreReview = async (reportId, adminId) => {
       resolvedById: adminId,
     },
   });
+
+  // Trigger REVIEW_RESTORED notification to reviewer
+  try {
+    await createNotification({
+      userId: report.rating.userId,
+      type: 'REVIEW_RESTORED',
+      title: 'Review Restored',
+      message: `Your review on "${report.rating.store.name}" is visible again.`,
+      link: '/user/ratings',
+    });
+  } catch (err) {
+    console.error('Failed to send review restored notification:', err);
+  }
 
   return updatedReport;
 };

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import NotificationPopover from './NotificationPopover';
 import { 
   Store, LogOut, KeyRound, User as UserIcon, Shield, Star, Compass, 
   ChevronDown, Award, Menu, X, ArrowRight, Layers, BarChart3, Users, Bell 
@@ -117,15 +118,8 @@ const Navbar = () => {
           <div className="flex items-center space-x-3">
             {isAuthenticated && user ? (
               <div className="flex items-center space-x-2.5">
-                {/* Notification Bell */}
-                <button
-                  type="button"
-                  className="p-2 bg-[#235344] hover:bg-[#2F6654] border border-[#3E7D69] rounded-xl text-[#D0E2DB] hover:text-white transition-colors relative cursor-pointer"
-                  aria-label="Notifications"
-                >
-                  <Bell className="w-4 h-4" />
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#C9A24A] rounded-full" />
-                </button>
+                {/* Interactive Notification Popover */}
+                <NotificationPopover />
 
                 {/* Profile Dropdown Toggle */}
                 <div className="relative" ref={menuRef}>

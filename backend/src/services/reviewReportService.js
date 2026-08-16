@@ -1,4 +1,5 @@
 const prisma = require('../utils/prisma');
+const { createNotification } = require('./notificationService');
 
 class ReportError extends Error {
   constructor(message, statusCode) {
@@ -20,6 +21,7 @@ const createReport = async (reporterId, ratingId, { reason, description }) => {
 
   const rating = await prisma.rating.findUnique({
     where: { id: ratingId },
+    include: { store: true },
   });
 
   if (!rating) {
@@ -51,6 +53,25 @@ const createReport = async (reporterId, ratingId, { reason, description }) => {
       status: 'PENDING',
     },
   });
+
+  // Trigger REVIEW_REPORTED notification to all ADMIN users
+  try {
+    const admins = await prisma.user.findMany({
+      where: { role: 'ADMIN' },
+      select: { id: true },
+    });
+    for (const admin of admins) {
+      await createNotification({
+        userId: admin.id,
+        type: 'REVIEW_REPORTED',
+        title: 'Review Reported for Moderation',
+        message: `A review on "${rating.store.name}" was flagged for ${reason.toUpperCase()}.`,
+        link: '/admin/reports',
+      });
+    }
+  } catch (err) {
+    console.error('Failed to send review report notification:', err);
+  }
 
   return newReport;
 };

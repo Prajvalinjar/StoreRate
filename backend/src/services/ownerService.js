@@ -1,4 +1,5 @@
 const prisma = require('../utils/prisma');
+const { createNotification } = require('./notificationService');
 
 class OwnerError extends Error {
   constructor(message, statusCode) {
@@ -102,6 +103,25 @@ const createOwnerStore = async (ownerId, { name, email, address, category }) => 
     },
   });
 
+  // Trigger NEW_STORE_SUBMISSION notification to all ADMIN users
+  try {
+    const admins = await prisma.user.findMany({
+      where: { role: 'ADMIN' },
+      select: { id: true },
+    });
+    for (const admin of admins) {
+      await createNotification({
+        userId: admin.id,
+        type: 'NEW_STORE_SUBMISSION',
+        title: 'New Store Listing Submitted',
+        message: `"${newStore.name}" is pending approval.`,
+        link: '/admin?tab=pending',
+      });
+    }
+  } catch (err) {
+    console.error('Failed to send admin notification:', err);
+  }
+
   return newStore;
 };
 
@@ -133,6 +153,19 @@ const replyToRating = async (ownerId, ratingId, replyText) => {
       ownerReplyAt: new Date(),
     },
   });
+
+  // Trigger OWNER_REPLY notification to customer
+  try {
+    await createNotification({
+      userId: rating.userId,
+      type: 'OWNER_REPLY',
+      title: 'Store Owner Replied to Your Review',
+      message: `The owner of "${rating.store.name}" responded to your review.`,
+      link: `/stores/${rating.storeId}`,
+    });
+  } catch (err) {
+    console.error('Failed to send owner reply notification:', err);
+  }
 
   return updatedRating;
 };

@@ -33,6 +33,7 @@ import UserDetailsPage from './pages/UserDetailsPage';
 import StoreManagementPage from './pages/StoreManagementPage';
 import AdminProfilePage from './pages/AdminProfilePage';
 import AdminReviewReportsPage from './pages/AdminReviewReportsPage';
+import NotificationPage from './pages/NotificationPage';
 
 import ExploreStoresPage from './pages/ExploreStoresPage';
 import StoreProfilePage from './pages/StoreProfilePage';
@@ -82,6 +83,14 @@ const AppLayout = () => {
         element={
           <ProtectedRoute>
             <PublicLayout><ChangePasswordPage /></PublicLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <AppShell><NotificationPage /></AppShell>
           </ProtectedRoute>
         }
       />

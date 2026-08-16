@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import NotificationPopover from './NotificationPopover';
 import { Menu, Bell, User as UserIcon, LogOut, KeyRound, ChevronDown, Store, Shield, Star } from 'lucide-react';
 
 const TopHeader = ({ setMobileOpen }) => {
@@ -100,16 +101,8 @@ const TopHeader = ({ setMobileOpen }) => {
 
       {/* Right: Notifications & User Profile Dropdown */}
       <div className="flex items-center space-x-3 shrink-0">
-        {/* Notification Bell */}
-        <button
-          type="button"
-          className="p-2 text-[#707873] hover:text-[#173D32] hover:bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl transition-colors relative cursor-pointer"
-          aria-label="Notifications"
-          title="Notifications"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#C9A24A] rounded-full ring-2 ring-white" />
-        </button>
+        {/* Interactive Notification Popover */}
+        <NotificationPopover />
 
         {/* User Identity Pill with Dropdown Menu */}
         <div className="relative" ref={dropdownRef}>

@@ -6,6 +6,7 @@ const userStoreRoutes = require('./routes/userStoreRoutes');
 const ownerRoutes = require('./routes/ownerRoutes');
 const publicRoutes = require('./routes/publicRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
@@ -39,6 +40,9 @@ app.use('/api/reviews', reviewRoutes);
 
 // Store Owner routes
 app.use('/api/owner', ownerRoutes);
+
+// Notification routes
+app.use('/api/notifications', notificationRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
