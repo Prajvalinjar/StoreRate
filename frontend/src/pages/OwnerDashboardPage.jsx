@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getOwnerDashboard, createOwnerStore } from '../api/ownerService';
 import StarRating from '../components/StarRating';
-import { Store, Star, Users, MapPin, Mail, AlertCircle, RefreshCw, Award, TrendingUp, Sparkles, CheckCircle2, Clock, XCircle, Send } from 'lucide-react';
+import { Store, Star, Users, MapPin, Mail, AlertCircle, RefreshCw, Award, TrendingUp, Sparkles, CheckCircle2, Clock, XCircle, Send, MessageSquare } from 'lucide-react';
 
 const OwnerDashboardPage = () => {
   const [storeData, setStoreData] = useState(null);
@@ -249,10 +249,15 @@ const OwnerDashboardPage = () => {
   }
 
   const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  let writtenReviewsCount = 0;
+
   if (storeData && storeData.ratings) {
     storeData.ratings.forEach((r) => {
       if (distribution[r.rating] !== undefined) {
         distribution[r.rating]++;
+      }
+      if (r.review && r.review.trim().length > 0) {
+        writtenReviewsCount++;
       }
     });
   }
@@ -404,26 +409,26 @@ const OwnerDashboardPage = () => {
             {/* Total Ratings Block */}
             <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2">
               <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">
-                TOTAL REVIEWS
+                TOTAL RATINGS
               </span>
               <div className="flex items-baseline space-x-2 pt-1">
                 <span className="text-3xl font-black text-[#171A18] tracking-tight leading-none">{storeData.totalRatings}</span>
                 <span className="text-xs text-[#707873]">
-                  {storeData.totalRatings === 1 ? 'submission' : 'submissions'}
+                  {storeData.totalRatings === 1 ? 'rating' : 'ratings'}
                 </span>
               </div>
             </div>
 
-            {/* 5-Star Ratio Block */}
+            {/* Written Reviews Count Block */}
             <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2">
               <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">
-                5-STAR RATINGS
+                WRITTEN REVIEWS
               </span>
               <div className="flex items-baseline space-x-2 pt-1">
                 <span className="text-3xl font-black text-[#173D32] tracking-tight leading-none">
-                  {fiveStarPercentage}%
+                  {writtenReviewsCount}
                 </span>
-                <span className="text-xs text-[#707873]">top score ratio</span>
+                <span className="text-xs text-[#707873]">written feedback</span>
               </div>
             </div>
 
@@ -441,7 +446,7 @@ const OwnerDashboardPage = () => {
             </div>
           </div>
 
-          {/* Mathematically Verified Store Reputation Insights Card */}
+          {/* Customer Feedback Insights */}
           <div className="bg-[#E7F0EB] border border-[#CDE0D5] rounded-2xl p-6 shadow-xs space-y-3 text-left">
             <div className="flex items-center space-x-2">
               <Sparkles className="w-5 h-5 text-[#C9A24A]" />
@@ -453,14 +458,14 @@ const OwnerDashboardPage = () => {
                 <div className="bg-white/80 p-3.5 rounded-xl border border-[#CDE0D5] space-y-1">
                   <p className="font-bold text-[#171A18]">Overall Rating Score</p>
                   <p className="text-[#707873]">
-                    Your store maintains an average score of <strong className="text-[#C9A24A]">{Number(storeData.averageRating).toFixed(1)}/5.0</strong> from {storeData.totalRatings} customer submissions.
+                    Your store maintains an average score of <strong className="text-[#C9A24A]">{Number(storeData.averageRating).toFixed(1)}/5.0</strong> from {storeData.totalRatings} customer ratings.
                   </p>
                 </div>
 
                 <div className="bg-white/80 p-3.5 rounded-xl border border-[#CDE0D5] space-y-1">
-                  <p className="font-bold text-[#171A18]">Top Rating Performance</p>
+                  <p className="font-bold text-[#171A18]">Written Reviews</p>
                   <p className="text-[#707873]">
-                    <strong className="text-[#173D32]">{fiveStarPercentage}%</strong> of all submitted reviews awarded your business a 5-star rating ({distribution[5]} ratings).
+                    <strong className="text-[#173D32]">{writtenReviewsCount}</strong> customers submitted detailed written feedback reviews.
                   </p>
                 </div>
 
@@ -477,170 +482,20 @@ const OwnerDashboardPage = () => {
               </p>
             )}
           </div>
-
-          {/* Rating Distribution Analytics & Rating Trend Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Rating Distribution Bar Chart */}
-            <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 shadow-xs space-y-5">
-              <div className="border-b border-[#E2E5DF] pb-4 flex items-center justify-between">
-                <h2 className="font-display text-base font-bold text-[#171A18] flex items-center space-x-2">
-                  <Star className="w-4 h-4 text-[#C9A24A] fill-[#C9A24A]" />
-                  <span>Rating Breakdown</span>
-                </h2>
-                <span className="text-[11px] text-[#707873] font-mono">
-                  {storeData.totalRatings} total {storeData.totalRatings === 1 ? 'submission' : 'submissions'}
-                </span>
-              </div>
-
-              {storeData.totalRatings === 0 ? (
-                <div className="p-8 text-center text-xs text-[#707873]">
-                  No customer ratings submitted yet.
-                </div>
-              ) : (
-                <div className="space-y-3 pt-1">
-                  {[5, 4, 3, 2, 1].map((starNum) => {
-                    const count = distribution[starNum] || 0;
-                    const percent = storeData.totalRatings > 0 ? Math.round((count / storeData.totalRatings) * 100) : 0;
-
-                    return (
-                      <div key={starNum} className="flex items-center space-x-3 text-xs">
-                        <span className="w-8 font-bold text-[#171A18] flex items-center space-x-1 shrink-0">
-                          <span>{starNum}</span>
-                          <span className="text-[#C9A24A]">★</span>
-                        </span>
-
-                        <div className="flex-1 bg-[#F7F6F1] border border-[#E2E5DF] rounded-full h-3 overflow-hidden p-0.5">
-                          <div
-                            className="bg-[#173D32] h-full rounded-full transition-all duration-300"
-                            style={{ width: `${percent}%` }}
-                          />
-                        </div>
-
-                        <span className="w-16 text-right text-[#707873] font-mono text-[11px] shrink-0">
-                          {count} ({percent}%)
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Rating Activity & Trend Module */}
-            <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4 text-left">
-              <div className="border-b border-[#E2E5DF] pb-4 flex items-center justify-between">
-                <h2 className="font-display text-base font-bold text-[#171A18] flex items-center space-x-2">
-                  <TrendingUp className="w-4 h-4 text-[#173D32]" />
-                  <span>Rating Trend Timeline</span>
-                </h2>
-                <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider bg-[#E7F0EB] px-2.5 py-1 rounded-full text-[#173D32]">
-                  {storeData.totalRatings} {storeData.totalRatings === 1 ? 'Point' : 'Points'}
-                </span>
-              </div>
-
-              {storeData.ratings && storeData.ratings.length > 0 ? (
-                <div className="space-y-4">
-                  {/* SVG Line Chart for 1, 2, 3+ Ratings */}
-                  <div className="relative w-full h-44 bg-[#F7F6F1] rounded-xl border border-[#E2E5DF] p-4 flex flex-col justify-between">
-                    <div className="absolute inset-x-4 top-4 bottom-8 flex flex-col justify-between opacity-30 pointer-events-none">
-                      <div className="border-b border-dashed border-[#707873] w-full text-[9px] text-[#707873]">5.0 ★</div>
-                      <div className="border-b border-dashed border-[#707873] w-full text-[9px] text-[#707873]">3.0 ★</div>
-                      <div className="border-b border-dashed border-[#707873] w-full text-[9px] text-[#707873]">1.0 ★</div>
-                    </div>
-
-                    {/* Chart SVG */}
-                    <svg className="w-full h-28 overflow-visible relative z-10">
-                      {(() => {
-                        const sortedRatings = [...storeData.ratings].reverse(); // oldest to newest
-                        const count = sortedRatings.length;
-                        const width = 100; // percent width
-                        const points = sortedRatings.map((r, idx) => {
-                          const x = count === 1 ? 50 : (idx / (count - 1)) * 80 + 10;
-                          // 5 -> top (y=10), 1 -> bottom (y=90)
-                          const y = 90 - ((r.rating - 1) / 4) * 80;
-                          return { x, y, rating: r.rating, date: formatDate(r.createdAt), user: r.userName };
-                        });
-
-                        const pathString = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x}% ${p.y}%`).join(' ');
-
-                        return (
-                          <>
-                            {count > 1 && (
-                              <path
-                                d={pathString}
-                                fill="none"
-                                stroke="#173D32"
-                                strokeWidth="3"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            )}
-                            {points.map((p, idx) => (
-                              <g key={idx}>
-                                <circle
-                                  cx={`${p.x}%`}
-                                  cy={`${p.y}%`}
-                                  r="6"
-                                  className="fill-[#C9A24A] stroke-white stroke-2 shadow-xs"
-                                />
-                                <text
-                                  x={`${p.x}%`}
-                                  y={`${p.y - 12}%`}
-                                  textAnchor="middle"
-                                  className="text-[10px] font-extrabold fill-[#173D32]"
-                                >
-                                  {p.rating}.0 ★
-                                </text>
-                              </g>
-                            ))}
-                          </>
-                        );
-                      })()}
-                    </svg>
-
-                    {/* X-Axis Date Labels */}
-                    <div className="flex justify-between items-center text-[10px] text-[#707873] font-mono px-2 z-10 pt-1 border-t border-[#E2E5DF]">
-                      {(() => {
-                        const sortedRatings = [...storeData.ratings].reverse();
-                        if (sortedRatings.length === 1) {
-                          return <span className="w-full text-center">{formatDate(sortedRatings[0].createdAt)}</span>;
-                        }
-                        return sortedRatings.map((r, idx) => (
-                          <span key={idx} className="truncate max-w-[80px]">
-                            {formatDate(r.createdAt)}
-                          </span>
-                        ));
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="py-10 px-4 text-center space-y-2 bg-[#F7F6F1] rounded-xl border border-[#E2E5DF]">
-                  <TrendingUp className="w-8 h-8 text-[#9CA59E] mx-auto stroke-1" />
-                  <p className="font-display text-sm font-bold text-[#171A18]">No customer ratings yet</p>
-                  <p className="text-xs text-[#707873] max-w-xs mx-auto font-normal">
-                    Rating trend points will plot automatically as customer reviews are submitted.
-                  </p>
-                </div>
-              )}
-
-              <div className="text-[11px] text-[#707873] flex justify-between items-center pt-1 border-t border-[#E2E5DF]">
-                <span>Total Rating Submissions: <strong className="text-[#171A18]">{storeData.totalRatings}</strong></span>
-                <span>5.0 Benchmark Scale</span>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
-      {/* Tab 2: Customer Ratings (Responsive Table / Mobile Cards) */}
+      {/* Tab 2: Customer Ratings & Written Reviews List */}
       {activeTab === 'ratings' && (
-        <div className="bg-white border border-[#E2E5DF] rounded-2xl shadow-xs overflow-hidden">
-          <div className="p-5 border-b border-[#E2E5DF] flex items-center justify-between">
-            <h3 className="font-display text-base font-bold text-[#171A18] flex items-center space-x-2">
-              <Users className="w-4 h-4 text-[#173D32]" />
-              <span>Customer Rating Submissions ({storeData.totalRatings})</span>
+        <div className="bg-white border border-[#E2E5DF] rounded-2xl shadow-xs overflow-hidden space-y-4 p-6">
+          <div className="border-b border-[#E2E5DF] pb-4 flex items-center justify-between">
+            <h3 className="font-display text-lg font-bold text-[#171A18] flex items-center space-x-2">
+              <Users className="w-5 h-5 text-[#173D32]" />
+              <span>Customer Ratings & Written Reviews ({storeData.totalRatings})</span>
             </h3>
+            <span className="text-xs text-[#707873] font-mono">
+              {writtenReviewsCount} written feedback reviews
+            </span>
           </div>
 
           {storeData.ratings.length === 0 ? (
@@ -649,71 +504,38 @@ const OwnerDashboardPage = () => {
               <p className="text-xs text-[#707873]">This store hasn't received any customer ratings yet.</p>
             </div>
           ) : (
-            <>
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-[#F7F6F1] border-b border-[#E2E5DF] text-[#707873] uppercase font-bold text-[10px] tracking-wider">
-                    <tr>
-                      <th className="py-4 px-6">Customer</th>
-                      <th className="py-4 px-6">Customer Email</th>
-                      <th className="py-4 px-6">Rating</th>
-                      <th className="py-4 px-6 text-right">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E2E5DF] text-[#171A18]">
-                    {storeData.ratings.map((r) => (
-                      <tr key={r.id} className="hover:bg-[#F7F6F1] transition-colors">
-                        <td className="py-4 px-6 font-bold text-[#171A18] flex items-center space-x-3">
-                          <div className="w-7 h-7 bg-[#173D32] text-white rounded-lg flex items-center justify-center font-black text-[10px] shrink-0">
-                            {getInitials(r.userName)}
-                          </div>
-                          <span>{r.userName}</span>
-                        </td>
-                        <td className="py-4 px-6 font-mono text-[#707873]">{r.userEmail}</td>
-                        <td className="py-4 px-6">
-                          <div className="flex items-center space-x-2">
-                            <StarRating value={r.rating} readOnly size="sm" />
-                            <span className="font-extrabold text-[#C9A24A] text-xs">{r.rating}.0</span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6 text-right text-[#707873] font-mono text-[11px]">
-                          {formatDate(r.createdAt)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile Card List View */}
-              <div className="md:hidden divide-y divide-[#E2E5DF]">
-                {storeData.ratings.map((r) => (
-                  <div key={r.id} className="p-4 space-y-2 text-xs text-left">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {storeData.ratings.map((r) => (
+                <div key={r.id} className="p-5 bg-[#F7F6F1] border border-[#E2E5DF] rounded-2xl space-y-3 text-left flex flex-col justify-between">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2.5">
                         <div className="w-8 h-8 bg-[#173D32] text-white rounded-lg flex items-center justify-center font-black text-xs shrink-0">
                           {getInitials(r.userName)}
                         </div>
                         <div>
-                          <p className="font-bold text-[#171A18]">{r.userName}</p>
-                          <p className="text-[10px] text-[#707873] font-mono">{r.userEmail}</p>
+                          <p className="font-bold text-xs text-[#171A18]">{r.userName}</p>
+                          <span className="text-[10px] text-[#707873] font-mono">{formatDate(r.createdAt)}</span>
                         </div>
                       </div>
-                      <span className="text-[10px] text-[#707873] font-mono">{formatDate(r.createdAt)}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between bg-[#F7F6F1] p-2.5 rounded-xl border border-[#E2E5DF]">
-                      <span className="text-[10px] uppercase font-bold text-[#707873]">Score</span>
-                      <div className="flex items-center space-x-1.5">
-                        <StarRating value={r.rating} readOnly size="sm" />
-                        <span className="font-extrabold text-[#C9A24A]">{r.rating}.0</span>
+                      <div className="flex items-center space-x-1 text-xs font-extrabold text-[#C9A24A] bg-white px-2.5 py-1 rounded-full border border-[#E2E5DF]">
+                        <Star className="w-3.5 h-3.5 fill-[#C9A24A]" />
+                        <span>{r.rating}.0</span>
                       </div>
                     </div>
+
+                    {/* Customer Written Review Text */}
+                    {r.review ? (
+                      <p className="text-xs text-[#171A18] font-normal leading-relaxed bg-white p-3 rounded-xl border border-[#E2E5DF] whitespace-pre-wrap">
+                        "{r.review}"
+                      </p>
+                    ) : (
+                      <p className="text-xs text-[#9CA59E] italic">No written review provided.</p>
+                    )}
                   </div>
-                ))}
-              </div>
-            </>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}

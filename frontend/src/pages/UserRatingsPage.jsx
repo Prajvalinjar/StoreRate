@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getMyRatings, updateRating } from '../api/userStoreService';
 import StarRating from '../components/StarRating';
-import { Star, MapPin, Edit3, X, AlertCircle, CheckCircle2, RefreshCw, Compass, Heart } from 'lucide-react';
+import { Star, MapPin, Edit3, X, AlertCircle, CheckCircle2, RefreshCw, Compass, Heart, MessageSquare } from 'lucide-react';
 
 const UserRatingsPage = () => {
   const [ratingsList, setRatingsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Rating Modal State
+  // Rating & Review Modal State
   const [selectedRatingObj, setSelectedRatingObj] = useState(null);
   const [selectedScore, setSelectedScore] = useState(0);
+  const [reviewInput, setReviewInput] = useState('');
   const [hoverScore, setHoverScore] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
@@ -23,7 +24,7 @@ const UserRatingsPage = () => {
     try {
       const response = await getMyRatings();
       if (response.status === 'success') {
-        setRatingsList(response.data.ratings);
+        setRatingsList(response.data.ratings || []);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load your rating history');
@@ -39,6 +40,7 @@ const UserRatingsPage = () => {
   const handleOpenModal = (ratingItem) => {
     setSelectedRatingObj(ratingItem);
     setSelectedScore(ratingItem.rating);
+    setReviewInput(ratingItem.review || '');
     setHoverScore(0);
     setModalError('');
     setModalSuccess('');
@@ -47,6 +49,7 @@ const UserRatingsPage = () => {
   const handleCloseModal = () => {
     setSelectedRatingObj(null);
     setSelectedScore(0);
+    setReviewInput('');
     setHoverScore(0);
     setModalError('');
     setModalSuccess('');
@@ -55,7 +58,12 @@ const UserRatingsPage = () => {
   const handleRatingSubmit = async (e) => {
     e.preventDefault();
     if (!selectedScore || selectedScore < 1 || selectedScore > 5) {
-      setModalError('Please select a rating between 1 and 5 stars');
+      setModalError('Please select a rating score between 1 and 5 stars');
+      return;
+    }
+
+    if (reviewInput && reviewInput.length > 500) {
+      setModalError('Review text cannot exceed 500 characters');
       return;
     }
 
@@ -64,9 +72,10 @@ const UserRatingsPage = () => {
     setModalSuccess('');
 
     try {
-      const response = await updateRating(selectedRatingObj.store.id, selectedScore);
+      const cleanReview = reviewInput.trim() ? reviewInput.trim() : null;
+      const response = await updateRating(selectedRatingObj.store.id, selectedScore, cleanReview);
       if (response.status === 'success') {
-        setModalSuccess('Rating updated successfully!');
+        setModalSuccess('Your rating & review have been updated successfully!');
         setTimeout(() => {
           handleCloseModal();
           fetchMyRatings();
@@ -110,22 +119,21 @@ const UserRatingsPage = () => {
     ? Number((ratingsList.reduce((acc, r) => acc + r.rating, 0) / ratingsList.length).toFixed(1))
     : 0;
 
-  const highestRating = ratingsList.length > 0 ? Math.max(...ratingsList.map(r => r.rating)) : 0;
-  const lowestRating = ratingsList.length > 0 ? Math.min(...ratingsList.map(r => r.rating)) : 0;
+  const writtenCount = ratingsList.filter((r) => r.review && r.review.trim().length > 0).length;
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 text-[#171A18]">
       {/* Editorial Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E2E5DF] pb-6 text-left">
         <div className="space-y-1.5">
-          <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block">
+          <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block border border-[#CDE0D5]">
             PERSONAL CONTRIBUTION
           </span>
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#171A18] tracking-tight">
-            Your Store Journey
+            My Ratings & Written Reviews
           </h1>
           <p className="text-xs sm:text-sm text-[#707873]">
-            Track and update all the ratings you have shared with the community.
+            Track and update all the ratings and reviews you have shared with the community.
           </p>
         </div>
       </div>
@@ -142,30 +150,33 @@ const UserRatingsPage = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-left">
           <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-1">
             <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">
-              Businesses Rated
+              Stores Rated
             </span>
             <div className="text-3xl font-black text-[#173D32]">{ratingsList.length}</div>
           </div>
 
           <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-1">
             <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">
-              Average Given
+              Avg Score Given
             </span>
-            <div className="text-3xl font-black text-[#C9A24A]">{averageGiven.toFixed(1)}</div>
+            <div className="text-3xl font-black text-[#C9A24A]">{averageGiven.toFixed(1)} ★</div>
           </div>
 
           <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-1">
             <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">
-              Highest Score
+              Written Reviews
             </span>
-            <div className="text-3xl font-black text-[#173D32]">{highestRating}.0</div>
+            <div className="text-3xl font-black text-[#173D32]">{writtenCount}</div>
           </div>
 
           <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-1">
             <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">
-              Lowest Score
+              Account Status
             </span>
-            <div className="text-3xl font-black text-[#707873]">{lowestRating}.0</div>
+            <div className="text-sm font-black text-[#173D32] pt-2 flex items-center space-x-1">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Verified User</span>
+            </div>
           </div>
         </div>
       )}
@@ -174,7 +185,7 @@ const UserRatingsPage = () => {
       {loading ? (
         <div className="py-24 text-center text-[#707873] flex flex-col items-center space-y-3">
           <RefreshCw className="w-6 h-6 animate-spin text-[#173D32]" />
-          <p className="text-xs font-medium">Loading your rating history...</p>
+          <p className="text-xs font-medium">Loading your ratings and reviews history...</p>
         </div>
       ) : ratingsList.length === 0 ? (
         /* Empty State */
@@ -190,7 +201,7 @@ const UserRatingsPage = () => {
           </div>
           <div className="pt-2">
             <Link
-              to="/user/stores"
+              to="/stores"
               className="inline-flex items-center space-x-2 px-6 py-3 bg-[#173D32] hover:bg-[#2F6654] text-white font-extrabold rounded-xl text-xs transition-colors shadow-xs"
             >
               <Compass className="w-4 h-4" />
@@ -207,45 +218,38 @@ const UserRatingsPage = () => {
             >
               {/* Store Identity */}
               <div className="space-y-1.5">
-                <h3 className="font-display text-xl font-bold text-[#171A18] tracking-tight line-clamp-1">
-                  {item.store.name}
-                </h3>
+                <div className="flex items-center justify-between">
+                  <Link to={`/stores/${item.store.id}`} className="font-display text-xl font-bold text-[#171A18] tracking-tight hover:text-[#173D32] truncate">
+                    {item.store.name}
+                  </Link>
+                  <span className="text-[10px] font-extrabold text-[#173D32] bg-[#E7F0EB] px-2.5 py-0.5 rounded-full border border-[#CDE0D5] shrink-0">
+                    {item.rating}.0 ★
+                  </span>
+                </div>
                 <p className="text-xs text-[#707873] flex items-center space-x-1.5">
                   <MapPin className="w-3.5 h-3.5 text-[#9CA59E] shrink-0" />
                   <span className="truncate">{item.store.address}</span>
                 </p>
               </div>
 
-              {/* Rating Information */}
+              {/* Rating & Review Content */}
               <div className="space-y-3 pt-3 border-t border-[#E2E5DF]">
-                {/* Your Rating Display */}
-                <div className="bg-[#F7F6F1] p-3.5 rounded-xl border border-[#E2E5DF] flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider font-bold text-[#707873] block mb-0.5">
-                      Your Rating
-                    </span>
-                    <div className="flex items-center space-x-2">
-                      <StarRating value={item.rating} readOnly size="sm" />
-                      <span className="font-extrabold text-[#C9A24A] text-sm">{item.rating}.0</span>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="text-[10px] text-[#707873] uppercase tracking-wider block mb-0.5">
-                      Rated Date
-                    </span>
-                    <span className="text-xs text-[#171A18] font-mono">
+                <div className="bg-[#F7F6F1] p-3.5 rounded-xl border border-[#E2E5DF] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <StarRating value={item.rating} readOnly size="xs" />
+                    <span className="text-[10px] text-[#707873] font-mono">
                       {formatDate(item.updatedAt || item.createdAt)}
                     </span>
                   </div>
-                </div>
 
-                {/* Overall Store Rating Reference */}
-                <div className="flex items-center justify-between text-xs text-[#707873] px-1">
-                  <span className="text-[11px]">Overall Store Average:</span>
-                  <span className="font-bold text-[#171A18]">
-                    {Number(item.store.averageRating).toFixed(1)} ★ ({item.store.totalRatings} {item.store.totalRatings === 1 ? 'rating' : 'ratings'})
-                  </span>
+                  {/* Review Text Body */}
+                  {item.review ? (
+                    <p className="text-xs text-[#171A18] font-normal leading-relaxed bg-white p-3 rounded-lg border border-[#E2E5DF] whitespace-pre-wrap">
+                      "{item.review}"
+                    </p>
+                  ) : (
+                    <p className="text-xs text-[#9CA59E] italic">No written review submitted.</p>
+                  )}
                 </div>
               </div>
 
@@ -253,10 +257,10 @@ const UserRatingsPage = () => {
               <div className="pt-1">
                 <button
                   onClick={() => handleOpenModal(item)}
-                  className="w-full py-2.5 px-4 bg-[#E7F0EB] hover:bg-[#D8E6DE] text-[#173D32] border border-[#CDE0D5] rounded-xl text-xs font-bold flex items-center justify-center space-x-2 transition-all"
+                  className="w-full py-2.5 px-4 bg-[#E7F0EB] hover:bg-[#D8E6DE] text-[#173D32] border border-[#CDE0D5] rounded-xl text-xs font-bold flex items-center justify-center space-x-2 transition-all cursor-pointer"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
-                  <span>Update Rating</span>
+                  <span>Edit Rating & Written Review</span>
                 </button>
               </div>
             </div>
@@ -264,35 +268,14 @@ const UserRatingsPage = () => {
         </div>
       )}
 
-      {/* Community Thank You Callout */}
-      {!loading && ratingsList.length > 0 && (
-        <div className="bg-[#E7F0EB] border border-[#CDE0D5] rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
-          <div className="flex items-center space-x-3">
-            <div className="p-3 bg-white text-[#173D32] rounded-xl border border-[#CDE0D5] shrink-0">
-              <Heart className="w-5 h-5 fill-[#173D32]" />
-            </div>
-            <div>
-              <h4 className="font-display text-base font-bold text-[#171A18]">Thank you for your feedback!</h4>
-              <p className="text-xs text-[#707873]">Your ratings help fellow community members make better decisions.</p>
-            </div>
-          </div>
-          <Link
-            to="/user/stores"
-            className="px-5 py-2.5 bg-[#173D32] hover:bg-[#2F6654] text-white font-bold rounded-xl text-xs shrink-0 transition-colors"
-          >
-            Rate More Stores
-          </Link>
-        </div>
-      )}
-
-      {/* Interactive Update Rating Modal */}
+      {/* Interactive Update Rating & Review Modal */}
       {selectedRatingObj && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E2E5DF] rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 relative text-left">
+          <div className="bg-white border border-[#E2E5DF] rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 relative text-left">
             <div className="flex items-start justify-between border-b border-[#E2E5DF] pb-4">
               <div className="space-y-1">
                 <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest block">
-                  UPDATE YOUR RATING
+                  UPDATE RATING & REVIEW
                 </span>
                 <h3 className="font-display text-xl font-bold text-[#171A18] line-clamp-1">{selectedRatingObj.store.name}</h3>
                 <p className="text-xs text-[#707873] truncate">{selectedRatingObj.store.address}</p>
@@ -320,11 +303,11 @@ const UserRatingsPage = () => {
               </div>
             )}
 
-            <form onSubmit={handleRatingSubmit} className="space-y-5 text-center">
-              <div className="space-y-3 py-4 bg-[#F7F6F1] p-5 rounded-2xl border border-[#E2E5DF]">
+            <form onSubmit={handleRatingSubmit} className="space-y-5">
+              <div className="space-y-3 py-3 bg-[#F7F6F1] p-4 rounded-2xl border border-[#E2E5DF] text-center">
                 <p className="text-[11px] font-bold text-[#707873] uppercase tracking-wider">
                   {currentDisplayScore > 0
-                    ? `Selected rating: ${currentDisplayScore}.0`
+                    ? `Selected rating: ${currentDisplayScore}.0 ★`
                     : 'Select rating (1 to 5 stars)'}
                 </p>
 
@@ -338,12 +321,31 @@ const UserRatingsPage = () => {
                 </div>
 
                 <div className="min-h-[1.5rem] flex items-center justify-center">
-                  <span className="text-xs font-bold text-[#C9A24A] uppercase tracking-wider bg-[#F5E6C8]/60 border border-[#E8D4A8] px-3.5 py-1 rounded-full">
+                  <span className="text-xs font-bold text-[#9A7525] uppercase tracking-wider bg-[#F5E6C8] border border-[#E8D4A8] px-3.5 py-1 rounded-full">
                     {currentDisplayScore > 0
                       ? `${currentDisplayScore} ${currentDisplayScore === 1 ? 'Star' : 'Stars'} — ${getRatingLabel(currentDisplayScore)}`
                       : 'Hover or click a star to rate'}
                   </span>
                 </div>
+              </div>
+
+              {/* Review Text Area */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-[#171A18]">
+                  <label htmlFor="userRatingsReviewInput">Edit written review (Optional)</label>
+                  <span className={`font-mono text-[10px] ${reviewInput.length > 480 ? 'text-rose-600 font-bold' : 'text-[#707873]'}`}>
+                    {reviewInput.length} / 500
+                  </span>
+                </div>
+                <textarea
+                  id="userRatingsReviewInput"
+                  rows={4}
+                  maxLength={500}
+                  value={reviewInput}
+                  onChange={(e) => setReviewInput(e.target.value)}
+                  placeholder="Share details of your experience, service quality, product selection, or customer care..."
+                  className="w-full p-3 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl text-xs font-normal text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:ring-2 focus:ring-[#173D32] transition-all resize-none"
+                />
               </div>
 
               <div className="flex items-center justify-end space-x-3 pt-2 border-t border-[#E2E5DF]">
@@ -357,9 +359,9 @@ const UserRatingsPage = () => {
                 <button
                   type="submit"
                   disabled={submitting || !selectedScore}
-                  className="px-6 py-2.5 bg-[#173D32] hover:bg-[#2F6654] text-white font-extrabold rounded-xl text-xs disabled:opacity-40 transition-colors shadow-xs"
+                  className="px-6 py-2.5 bg-[#173D32] hover:bg-[#2F6654] text-white font-extrabold rounded-xl text-xs disabled:opacity-40 transition-colors shadow-xs cursor-pointer"
                 >
-                  {submitting ? 'Saving...' : 'Update Rating'}
+                  {submitting ? 'Saving...' : 'Update Review'}
                 </button>
               </div>
             </form>

@@ -190,6 +190,7 @@ const getPublicStoreById = async (id) => {
         select: {
           id: true,
           rating: true,
+          review: true,
           createdAt: true,
           user: {
             select: {

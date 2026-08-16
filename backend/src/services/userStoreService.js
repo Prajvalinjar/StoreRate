@@ -43,6 +43,7 @@ const getStoresForUser = async (userId, { name, address, q }) => {
         select: {
           userId: true,
           rating: true,
+          review: true,
         },
       },
     },
@@ -55,6 +56,7 @@ const getStoresForUser = async (userId, { name, address, q }) => {
     
     const userRatingObj = store.ratings.find((r) => r.userId === userId);
     const userRating = userRatingObj ? userRatingObj.rating : null;
+    const userReview = userRatingObj ? userRatingObj.review : null;
 
     const { ratings, ...storeData } = store;
 
@@ -63,13 +65,14 @@ const getStoresForUser = async (userId, { name, address, q }) => {
       averageRating,
       totalRatings,
       userRating,
+      userReview,
     };
   });
 
   return { stores };
 };
 
-const submitRating = async (userId, storeId, rating) => {
+const submitRating = async (userId, storeId, rating, review = null) => {
   const store = await prisma.store.findUnique({
     where: { id: storeId },
   });
@@ -92,7 +95,7 @@ const submitRating = async (userId, storeId, rating) => {
   });
 
   if (existingRating) {
-    throw new UserStoreError('Rating already exists for this store. Use PUT to update your rating.', 400);
+    throw new UserStoreError('Rating already exists for this store. Use PUT to update your review.', 400);
   }
 
   const newRating = await prisma.rating.create({
@@ -100,13 +103,14 @@ const submitRating = async (userId, storeId, rating) => {
       userId,
       storeId,
       rating,
+      review,
     },
   });
 
   return newRating;
 };
 
-const updateRating = async (userId, storeId, rating) => {
+const updateRating = async (userId, storeId, rating, review = null) => {
   const store = await prisma.store.findUnique({
     where: { id: storeId },
   });
@@ -141,6 +145,7 @@ const updateRating = async (userId, storeId, rating) => {
     },
     data: {
       rating,
+      review,
     },
   });
 
@@ -176,6 +181,7 @@ const getUserRatings = async (userId) => {
     return {
       id: r.id,
       rating: r.rating,
+      review: r.review,
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
       store: {
@@ -186,6 +192,7 @@ const getUserRatings = async (userId) => {
         averageRating,
         totalRatings,
         userRating: r.rating,
+        userReview: r.review,
       },
     };
   });

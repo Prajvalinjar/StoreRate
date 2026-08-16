@@ -37,9 +37,9 @@ const postRating = async (req, res, next) => {
     }
 
     const { storeId } = paramResult.data;
-    const { rating } = ratingBodySchema.parse(req.body);
+    const { rating, review } = ratingBodySchema.parse(req.body);
 
-    const newRating = await userStoreService.submitRating(req.user.id, storeId, rating);
+    const newRating = await userStoreService.submitRating(req.user.id, storeId, rating, review);
     return res.status(201).json({
       status: 'success',
       message: 'Rating submitted successfully',
@@ -75,9 +75,9 @@ const putRating = async (req, res, next) => {
     }
 
     const { storeId } = paramResult.data;
-    const { rating } = ratingBodySchema.parse(req.body);
+    const { rating, review } = ratingBodySchema.parse(req.body);
 
-    const updatedRating = await userStoreService.updateRating(req.user.id, storeId, rating);
+    const updatedRating = await userStoreService.updateRating(req.user.id, storeId, rating, review);
     return res.status(200).json({
       status: 'success',
       message: 'Rating updated successfully',

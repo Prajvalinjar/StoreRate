@@ -23,6 +23,7 @@ const getOwnerDashboard = async (ownerId) => {
         select: {
           id: true,
           rating: true,
+          review: true,
           createdAt: true,
           user: {
             select: {
@@ -53,6 +54,7 @@ const getOwnerDashboard = async (ownerId) => {
         userName: r.user.name,
         userEmail: r.user.email,
         rating: r.rating,
+        review: r.review,
         createdAt: r.createdAt,
       }))
     : [];
