@@ -25,38 +25,57 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     return (words[0][0] + words[words.length - 1][0]).toUpperCase();
   };
 
-  const isActive = (path) => {
-    if (path === '/admin') {
-      return location.pathname === '/admin';
+  // Exact single-active-state route matcher
+  const isItemActive = (key) => {
+    const path = location.pathname;
+    const search = location.search;
+
+    if (user.role === 'USER') {
+      if (key === 'overview') return path === '/user/stores' || path === '/user';
+      if (key === 'explore') return path === '/stores';
+      if (key === 'ratings') return path === '/user/ratings';
+      if (key === 'profile') return path === '/user/profile';
     }
-    return location.pathname.startsWith(path);
+
+    if (user.role === 'STORE_OWNER') {
+      if (key === 'overview') return path === '/owner';
+      if (key === 'store') return path === '/owner/profile';
+      if (key === 'profile') return path === '/owner/profile';
+    }
+
+    if (user.role === 'ADMIN') {
+      if (key === 'overview') return path === '/admin' && !search.includes('pending');
+      if (key === 'users') return path.startsWith('/admin/users');
+      if (key === 'stores') return path.startsWith('/admin/stores');
+      if (key === 'approvals') return path === '/admin' && search.includes('pending');
+      if (key === 'profile') return path === '/admin/profile';
+    }
+
+    return false;
   };
 
   const getNavItems = () => {
     switch (user.role) {
       case 'USER':
         return [
-          { label: 'Overview', path: '/user/stores', icon: LayoutDashboard },
-          { label: 'Explore Stores', path: '/user/stores', icon: Compass },
-          { label: 'My Ratings', path: '/user/ratings', icon: Star },
-          { label: 'My Profile', path: '/user/profile', icon: UserIcon },
+          { key: 'overview', label: 'Overview', path: '/user/stores', icon: LayoutDashboard },
+          { key: 'explore', label: 'Explore Stores', path: '/stores', icon: Compass },
+          { key: 'ratings', label: 'My Ratings', path: '/user/ratings', icon: Star },
+          { key: 'profile', label: 'My Profile', path: '/user/profile', icon: UserIcon },
         ];
       case 'STORE_OWNER':
         return [
-          { label: 'Overview', path: '/owner', icon: LayoutDashboard },
-          { label: 'My Store', path: '/owner', icon: Store },
-          { label: 'Customer Ratings', path: '/owner', icon: Star },
-          { label: 'Analytics', path: '/owner', icon: TrendingUp },
-          { label: 'Store Profile', path: '/owner/profile', icon: ExternalLink },
-          { label: 'My Profile', path: '/owner/profile', icon: UserIcon },
+          { key: 'overview', label: 'Overview & Analytics', path: '/owner', icon: LayoutDashboard },
+          { key: 'store', label: 'My Store Details', path: '/owner/profile', icon: Store },
+          { key: 'profile', label: 'My Owner Profile', path: '/owner/profile', icon: UserIcon },
         ];
       case 'ADMIN':
         return [
-          { label: 'Overview', path: '/admin', icon: LayoutDashboard },
-          { label: 'Users Management', path: '/admin/users', icon: Users },
-          { label: 'Stores Management', path: '/admin/stores', icon: Store },
-          { label: 'Pending Approvals', path: '/admin', icon: Clock },
-          { label: 'Admin Profile', path: '/admin/profile', icon: UserIcon },
+          { key: 'overview', label: 'Overview', path: '/admin', icon: LayoutDashboard },
+          { key: 'users', label: 'Users Management', path: '/admin/users', icon: Users },
+          { key: 'stores', label: 'Stores Management', path: '/admin/stores', icon: Store },
+          { key: 'approvals', label: 'Pending Approvals', path: '/admin?tab=pending', icon: Clock },
+          { key: 'profile', label: 'Admin Profile', path: '/admin/profile', icon: UserIcon },
         ];
       default:
         return [];
@@ -66,7 +85,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const navItems = getNavItems();
 
   const sidebarContent = (
-    <div className="flex flex-col h-full justify-between bg-[#173D32] border-r border-[#123027] text-white w-64 sm:w-72 shrink-0 p-5 space-y-6 text-left select-none">
+    <div className="flex flex-col h-full justify-between bg-[#173D32] border-r border-[#123027] text-white w-64 sm:w-72 shrink-0 p-5 select-none">
       <div className="space-y-6">
         {/* Brand Logo Header */}
         <Link to="/" className="flex items-center space-x-3 group pt-1">
@@ -74,7 +93,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
             <Store className="w-5 h-5 text-white" />
             <Star className="w-2.5 h-2.5 text-[#C9A24A] fill-[#C9A24A] absolute -top-0.5 -right-0.5" />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col text-left">
             <span className="font-display text-xl font-extrabold text-white tracking-tight leading-none">
               Store<span className="text-[#C9A24A]">Rate</span>
             </span>
@@ -85,7 +104,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         </Link>
 
         {/* User Identity Card */}
-        <div className="p-3.5 bg-[#235344]/80 border border-[#3E7D69] rounded-2xl flex items-center space-x-3">
+        <div className="p-3.5 bg-[#235344]/80 border border-[#3E7D69] rounded-2xl flex items-center space-x-3 text-left">
           <div className="w-9 h-9 bg-[#C9A24A] text-[#173D32] rounded-xl flex items-center justify-center font-extrabold text-xs shrink-0 shadow-xs">
             {getInitials(user.name)}
           </div>
@@ -100,21 +119,21 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         </div>
 
         {/* Navigation Links */}
-        <div className="space-y-1 pt-2">
+        <div className="space-y-1 pt-2 text-left">
           <p className="text-[10px] font-extrabold text-[#A3C2B6] uppercase tracking-widest px-3 mb-2">
-            Main Navigation
+            MAIN NAVIGATION
           </p>
-          {navItems.map((item, index) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
-            const active = isActive(item.path);
+            const active = isItemActive(item.key);
             return (
               <Link
-                key={`${item.path}-${index}`}
+                key={item.key}
                 to={item.path}
                 onClick={() => setMobileOpen && setMobileOpen(false)}
                 className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
                   active
-                    ? 'bg-[#2F6654] text-white border border-[#3E7D69] shadow-xs'
+                    ? 'bg-[#2F6654] text-white border border-[#3E7D69] shadow-xs font-extrabold'
                     : 'text-[#D0E2DB] hover:text-white hover:bg-[#235344]/60'
                 }`}
               >
@@ -129,8 +148,8 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         </div>
       </div>
 
-      {/* Footer Controls */}
-      <div className="space-y-2 pt-4 border-t border-[#123027]">
+      {/* Footer Controls Anchored at Bottom */}
+      <div className="space-y-2 pt-4 border-t border-[#123027] text-left">
         <Link
           to="/"
           onClick={() => setMobileOpen && setMobileOpen(false)}
@@ -154,7 +173,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   return (
     <>
-      {/* Desktop Sticky Sidebar */}
+      {/* Desktop Fixed 100vh Sidebar */}
       <aside className="hidden lg:block h-screen sticky top-0 z-40">
         {sidebarContent}
       </aside>
