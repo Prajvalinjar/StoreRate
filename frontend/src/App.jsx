@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import AppShell from './components/AppShell';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleRoute from './components/RoleRoute';
 import AdminLayout from './components/AdminLayout';
@@ -32,110 +33,117 @@ const SmartDashboardRedirect = () => {
   return <AuthPlaceholderPage />;
 };
 
-const AppLayout = () => {
+const PublicLayout = ({ children }) => {
   return (
     <div className="min-h-screen font-sans bg-[#F7F6F1] text-[#171A18] selection:bg-[#173D32] selection:text-white">
       <Navbar />
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/stores" element={<ExploreStoresPage />} />
-        <Route path="/explore" element={<Navigate to="/stores" replace />} />
-        <Route path="/stores/:id" element={<StoreProfilePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <SmartDashboardRedirect />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/change-password"
-          element={
-            <ProtectedRoute>
-              <ChangePasswordPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Normal User Routes */}
-        <Route
-          path="/user/stores"
-          element={
-            <ProtectedRoute>
-              <RoleRoute allowedRoles={['USER']}>
-                <UserStoresPage />
-              </RoleRoute>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/user/ratings"
-          element={
-            <ProtectedRoute>
-              <RoleRoute allowedRoles={['USER']}>
-                <UserRatingsPage />
-              </RoleRoute>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/user/profile"
-          element={
-            <ProtectedRoute>
-              <RoleRoute allowedRoles={['USER']}>
-                <UserProfilePage />
-              </RoleRoute>
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/user" element={<Navigate to="/user/stores" replace />} />
-
-        {/* Store Owner Routes */}
-        <Route
-          path="/owner"
-          element={
-            <ProtectedRoute>
-              <RoleRoute allowedRoles={['STORE_OWNER']}>
-                <OwnerDashboardPage />
-              </RoleRoute>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/owner/profile"
-          element={
-            <ProtectedRoute>
-              <RoleRoute allowedRoles={['STORE_OWNER']}>
-                <OwnerProfilePage />
-              </RoleRoute>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Admin Portal Routes */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <RoleRoute allowedRoles={['ADMIN']}>
-                <AdminLayout />
-              </RoleRoute>
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="users" element={<UserManagementPage />} />
-          <Route path="users/:id" element={<UserDetailsPage />} />
-          <Route path="stores" element={<StoreManagementPage />} />
-          <Route path="profile" element={<AdminProfilePage />} />
-        </Route>
-
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+      {children}
     </div>
+  );
+};
+
+const AppLayout = () => {
+  return (
+    <Routes>
+      {/* Public Pages */}
+      <Route path="/" element={<PublicLayout><LandingPage /></PublicLayout>} />
+      <Route path="/stores" element={<PublicLayout><ExploreStoresPage /></PublicLayout>} />
+      <Route path="/explore" element={<Navigate to="/stores" replace />} />
+      <Route path="/stores/:id" element={<PublicLayout><StoreProfilePage /></PublicLayout>} />
+      <Route path="/login" element={<PublicLayout><LoginPage /></PublicLayout>} />
+      <Route path="/register" element={<PublicLayout><RegisterPage /></PublicLayout>} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <SmartDashboardRedirect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/change-password"
+        element={
+          <ProtectedRoute>
+            <PublicLayout><ChangePasswordPage /></PublicLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Authenticated Normal User Routes (AppShell) */}
+      <Route
+        path="/user/stores"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={['USER']}>
+              <AppShell><UserStoresPage /></AppShell>
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/user/ratings"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={['USER']}>
+              <AppShell><UserRatingsPage /></AppShell>
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/user/profile"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={['USER']}>
+              <AppShell><UserProfilePage /></AppShell>
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/user" element={<Navigate to="/user/stores" replace />} />
+
+      {/* Authenticated Store Owner Routes (AppShell) */}
+      <Route
+        path="/owner"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={['STORE_OWNER']}>
+              <AppShell><OwnerDashboardPage /></AppShell>
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/owner/profile"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={['STORE_OWNER']}>
+              <AppShell><OwnerProfilePage /></AppShell>
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Authenticated Admin Routes (AppShell via AdminLayout) */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={['ADMIN']}>
+              <AdminLayout />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboardPage />} />
+        <Route path="users" element={<UserManagementPage />} />
+        <Route path="users/:id" element={<UserDetailsPage />} />
+        <Route path="stores" element={<StoreManagementPage />} />
+        <Route path="profile" element={<AdminProfilePage />} />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   );
 };
 
