@@ -164,6 +164,13 @@ const getPublicStoreById = async (id) => {
           id: true,
           rating: true,
           createdAt: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       },

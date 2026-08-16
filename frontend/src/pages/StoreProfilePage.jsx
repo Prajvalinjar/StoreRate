@@ -421,11 +421,24 @@ const StoreProfilePage = () => {
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-[#707873] pt-1">
-                      <span>Customer rating</span>
-                      <span className="flex items-center space-x-1 font-mono">
-                        <Calendar className="w-3 h-3 text-[#9CA59E]" />
-                        <span>{new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                      <span className="font-semibold text-[#171A18] truncate max-w-[140px]" title={r.user?.name}>
+                        {r.user?.name ? r.user.name : 'Community rating'}
                       </span>
+                      <div className="flex items-center space-x-2">
+                        {r.user?.email?.endsWith('@storerate.local') ? (
+                          <span className="text-[9px] font-bold text-[#9A7525] bg-[#F5E6C8]/60 px-2 py-0.5 rounded border border-[#E8D4A8]">
+                            Sample rating
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-bold text-[#173D32] bg-[#E7F0EB] px-2 py-0.5 rounded border border-[#CDE0D5]">
+                            Customer rating
+                          </span>
+                        )}
+                        <span className="flex items-center space-x-1 font-mono text-[10px]">
+                          <Calendar className="w-3 h-3 text-[#9CA59E]" />
+                          <span>{new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}
