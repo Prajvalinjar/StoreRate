@@ -36,6 +36,7 @@ const getPublicStats = async () => {
 /**
  * Retrieves public store listings with optional search (q) and pagination.
  * Only APPROVED stores are returned publicly.
+ * Recommended sorting uses a weighted Bayesian average formula.
  */
 const getPublicStores = async ({ q, category, minRating, sort = 'recommended', page = 1, limit = 12 } = {}) => {
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -87,17 +88,37 @@ const getPublicStores = async ({ q, category, minRating, sort = 'recommended', p
     },
   });
 
+  // Calculate platform-wide average rating (C) dynamically from approved store ratings
+  let totalRatingSum = 0;
+  let totalRatingCount = 0;
+
+  rawStores.forEach((store) => {
+    store.ratings.forEach((r) => {
+      totalRatingSum += r.rating;
+      totalRatingCount++;
+    });
+  });
+
+  const C = totalRatingCount > 0 ? totalRatingSum / totalRatingCount : 4.0;
+  const m = 3; // Minimum rating confidence threshold constant
+
   let stores = rawStores.map((store) => {
-    const totalRatings = store.ratings.length;
+    const v = store.ratings.length;
     const sum = store.ratings.reduce((acc, r) => acc + r.rating, 0);
-    const averageRating = totalRatings > 0 ? Number((sum / totalRatings).toFixed(1)) : 0;
+    const R = v > 0 ? sum / v : 0;
+    const averageRating = v > 0 ? Number(R.toFixed(1)) : 0;
+
+    // Weighted Bayesian Score: (v / (v + m)) * R + (m / (v + m)) * C
+    const weightedScore = (v / (v + m)) * R + (m / (v + m)) * C;
+
     const { ratings, ...storeData } = store;
 
     return {
       ...storeData,
       averageRating,
-      totalRatings,
-      ratingCount: totalRatings,
+      totalRatings: v,
+      ratingCount: v,
+      weightedScore,
     };
   });
 
@@ -107,25 +128,31 @@ const getPublicStores = async ({ q, category, minRating, sort = 'recommended', p
     stores = stores.filter((s) => s.averageRating >= minRatingVal);
   }
 
-  // Sorting
+  // Sorting Logic
   if (sort === 'rating_desc' || sort === 'highest_rated') {
+    // Highest Rated: Sort by raw average rating DESC, tie-breaker totalRatings DESC
     stores.sort((a, b) => b.averageRating - a.averageRating || b.totalRatings - a.totalRatings);
   } else if (sort === 'ratings_count_desc' || sort === 'most_rated') {
+    // Most Rated: Sort by total rating count DESC, tie-breaker averageRating DESC
     stores.sort((a, b) => b.totalRatings - a.totalRatings || b.averageRating - a.averageRating);
   } else if (sort === 'newest' || sort === 'newest_added') {
+    // Newest Added: Sort by createdAt DESC
     stores.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } else if (sort === 'name_asc') {
+    // Name A-Z
     stores.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sort === 'name_desc') {
+    // Name Z-A
     stores.sort((a, b) => b.name.localeCompare(a.name));
   } else {
-    // Recommended default: average rating DESC, tie-breaker name ASC
-    stores.sort((a, b) => b.averageRating - a.averageRating || a.name.localeCompare(b.name));
+    // Recommended (default): Sort by Weighted Bayesian Score DESC, tie-breaker totalRatings DESC
+    stores.sort((a, b) => b.weightedScore - a.weightedScore || b.totalRatings - a.totalRatings || a.name.localeCompare(b.name));
   }
 
   const total = stores.length;
   const skip = (pageNum - 1) * limitNum;
-  const paginatedStores = stores.slice(skip, skip + limitNum);
+  // Omit internal weightedScore before returning payload
+  const paginatedStores = stores.slice(skip, skip + limitNum).map(({ weightedScore, ...cleanStore }) => cleanStore);
 
   return {
     stores: paginatedStores,
@@ -139,7 +166,7 @@ const getPublicStores = async ({ q, category, minRating, sort = 'recommended', p
 };
 
 const getTopRatedStores = async (limit = 6) => {
-  const result = await getPublicStores({ sort: 'rating_desc', page: 1, limit });
+  const result = await getPublicStores({ sort: 'recommended', page: 1, limit });
   return { stores: result.stores };
 };
 
