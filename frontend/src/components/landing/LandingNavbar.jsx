@@ -29,9 +29,9 @@ const LandingNavbar = () => {
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8 text-xs font-semibold text-[#D0E2DB]">
-            <a href="#discover" className="hover:text-white transition-colors">
-              Discover Stores
-            </a>
+            <Link to="/stores" className="hover:text-white transition-colors">
+              Explore Stores
+            </Link>
             <a href="#how-it-works" className="hover:text-white transition-colors">
               How It Works
             </a>

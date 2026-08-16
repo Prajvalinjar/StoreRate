@@ -276,6 +276,13 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center space-x-2 text-xs">
                 <Link
+                  to="/stores"
+                  className="flex items-center space-x-1 text-[#D0E2DB] hover:text-white px-3 py-1.5 rounded-lg hover:bg-[#235344] transition-colors font-semibold"
+                >
+                  <Compass className="w-4 h-4 text-[#C9A24A]" />
+                  <span>Explore Stores</span>
+                </Link>
+                <Link
                   to="/login"
                   className="text-[#D0E2DB] hover:text-white px-3 py-1.5 rounded-lg hover:bg-[#235344] transition-colors font-medium"
                 >

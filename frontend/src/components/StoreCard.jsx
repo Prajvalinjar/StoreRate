@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { MapPin, Edit3, Star, Store, Sparkles } from 'lucide-react';
 import StarRating from './StarRating';
 import SafeImage from './SafeImage';
@@ -40,7 +41,7 @@ const getStoreVisual = (storeId, storeName) => {
   return STORE_IMAGES[index];
 };
 
-const StoreCard = ({ store, onRate }) => {
+const StoreCard = ({ store, onRate, onViewStore }) => {
   const { id, name, address, averageRating, totalRatings, userRating } = store;
   const visual = getStoreVisual(id, name);
 
@@ -79,9 +80,11 @@ const StoreCard = ({ store, onRate }) => {
       <div className="p-5 flex-1 flex flex-col justify-between space-y-4 text-left">
         <div className="space-y-1.5">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-display text-xl font-bold text-[#171A18] tracking-tight line-clamp-1 group-hover:text-[#173D32] transition-colors">
-              {name}
-            </h3>
+            <Link to={`/stores/${id}`} className="hover:underline">
+              <h3 className="font-display text-xl font-bold text-[#171A18] tracking-tight line-clamp-1 group-hover:text-[#173D32] transition-colors">
+                {name}
+              </h3>
+            </Link>
           </div>
           <p className="text-xs text-[#707873] flex items-center space-x-1.5 font-normal">
             <MapPin className="w-3.5 h-3.5 text-[#9CA59E] shrink-0" />
@@ -134,33 +137,45 @@ const StoreCard = ({ store, onRate }) => {
             )}
           </div>
 
-          {/* User's Rating Status Tag */}
-          <div className="text-xs flex items-center justify-between text-[#171A18] bg-[#F7F6F1] px-3.5 py-2 rounded-xl border border-[#E2E5DF]">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-[#707873]">Your Rating</span>
-            {userRating ? (
-              <div className="flex items-center space-x-1.5">
-                <StarRating value={userRating} readOnly size="sm" />
-                <span className="font-extrabold text-[#C9A24A] text-xs">{userRating}.0</span>
-              </div>
-            ) : (
-              <span className="text-[#9CA59E] text-[11px] italic">Not submitted</span>
-            )}
-          </div>
+          {/* User's Rating Status Tag (if authenticated rating data is present) */}
+          {userRating !== undefined && (
+            <div className="text-xs flex items-center justify-between text-[#171A18] bg-[#F7F6F1] px-3.5 py-2 rounded-xl border border-[#E2E5DF]">
+              <span className="text-[10px] uppercase tracking-wider font-bold text-[#707873]">Your Rating</span>
+              {userRating ? (
+                <div className="flex items-center space-x-1.5">
+                  <StarRating value={userRating} readOnly size="sm" />
+                  <span className="font-extrabold text-[#C9A24A] text-xs">{userRating}.0</span>
+                </div>
+              ) : (
+                <span className="text-[#9CA59E] text-[11px] italic">Not submitted</span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Primary Action Button */}
-        <div className="pt-1">
-          <button
-            onClick={() => onRate(store)}
-            className={`w-full py-2.5 px-4 rounded-xl text-xs font-extrabold flex items-center justify-center space-x-2 transition-all duration-150 cursor-pointer ${
-              userRating
-                ? 'bg-[#E7F0EB] hover:bg-[#D8E6DE] text-[#173D32] border border-[#CDE0D5]'
-                : 'bg-[#173D32] hover:bg-[#2F6654] text-white shadow-xs active:scale-[0.99]'
-            }`}
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-            <span>{userRating ? 'Update Your Rating' : 'Rate Business'}</span>
-          </button>
+        <div className="pt-1 flex items-center space-x-2">
+          {onRate ? (
+            <button
+              onClick={() => onRate(store)}
+              className={`w-full py-2.5 px-4 rounded-xl text-xs font-extrabold flex items-center justify-center space-x-2 transition-all duration-150 cursor-pointer ${
+                userRating
+                  ? 'bg-[#E7F0EB] hover:bg-[#D8E6DE] text-[#173D32] border border-[#CDE0D5]'
+                  : 'bg-[#173D32] hover:bg-[#2F6654] text-white shadow-xs active:scale-[0.99]'
+              }`}
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>{userRating ? 'Update Your Rating' : 'Rate Business'}</span>
+            </button>
+          ) : (
+            <Link
+              to={`/stores/${id}`}
+              className="w-full py-2.5 px-4 bg-[#173D32] hover:bg-[#2F6654] text-white rounded-xl text-xs font-extrabold flex items-center justify-center space-x-2 transition-all duration-150 shadow-xs cursor-pointer"
+            >
+              <Store className="w-3.5 h-3.5 text-[#C9A24A]" />
+              <span>View Store</span>
+            </Link>
+          )}
         </div>
       </div>
     </div>

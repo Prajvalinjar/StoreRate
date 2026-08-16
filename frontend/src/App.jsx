@@ -20,6 +20,8 @@ import UserProfilePage from './pages/UserProfilePage';
 import OwnerDashboardPage from './pages/OwnerDashboardPage';
 import OwnerProfilePage from './pages/OwnerProfilePage';
 import AdminProfilePage from './pages/AdminProfilePage';
+import ExploreStoresPage from './pages/ExploreStoresPage';
+import StoreProfilePage from './pages/StoreProfilePage';
 
 const SmartDashboardRedirect = () => {
   const { user } = useAuth();
@@ -39,6 +41,9 @@ const AppLayout = () => {
       {!isLandingPage && <Navbar />}
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/stores" element={<ExploreStoresPage />} />
+        <Route path="/explore" element={<Navigate to="/stores" replace />} />
+        <Route path="/stores/:id" element={<StoreProfilePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route
