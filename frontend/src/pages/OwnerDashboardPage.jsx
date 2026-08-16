@@ -14,6 +14,7 @@ const OwnerDashboardPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
+  const [category, setCategory] = useState('General');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
@@ -40,7 +41,7 @@ const OwnerDashboardPage = () => {
   const handleCreateStore = async (e) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !address.trim()) {
-      setFormError('Please fill out store name, business email, and address.');
+      setFormError('Please fill out store name, business email, address, and category.');
       return;
     }
 
@@ -53,6 +54,7 @@ const OwnerDashboardPage = () => {
         name: name.trim(),
         email: email.trim(),
         address: address.trim(),
+        category,
       });
 
       if (response.status === 'success') {
@@ -180,6 +182,31 @@ const OwnerDashboardPage = () => {
               />
             </div>
 
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-[#171A18] uppercase tracking-wider">
+                Store Category
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[#171A18] focus:outline-none focus:border-[#173D32]"
+                required
+              >
+                <option value="General">General</option>
+                <option value="Restaurant">Restaurant</option>
+                <option value="Grocery">Grocery</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Fashion">Fashion</option>
+                <option value="Beauty">Beauty</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Education">Education</option>
+                <option value="Services">Services</option>
+                <option value="Automotive">Automotive</option>
+                <option value="Home & Furniture">Home & Furniture</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
             <div className="pt-3 border-t border-[#E2E5DF]">
               <button
                 type="submit"
@@ -262,9 +289,14 @@ const OwnerDashboardPage = () => {
       <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 sm:p-8 shadow-xs space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E2E5DF] pb-5">
           <div className="space-y-1">
-            <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1 rounded-full inline-block border border-[#CDE0D5]">
-              BUSINESS INTELLIGENCE PORTAL
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1 rounded-full inline-block border border-[#CDE0D5]">
+                BUSINESS INTELLIGENCE PORTAL
+              </span>
+              <span className="text-[10px] font-extrabold text-[#C9A24A] uppercase tracking-widest bg-[#F5E6C8] px-3 py-1 rounded-full inline-block border border-[#E8D4A8]">
+                🏪 {storeData.category || 'General'}
+              </span>
+            </div>
             <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#171A18] tracking-tight">{storeData.name}</h1>
             <p className="text-xs text-[#707873]">Monitor customer feedback telemetry and business reputation metrics.</p>
           </div>

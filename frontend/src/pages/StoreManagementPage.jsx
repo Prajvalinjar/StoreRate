@@ -206,6 +206,7 @@ const StoreManagementPage = () => {
                     <ArrowUpDown className="w-3 h-3 text-[#9CA59E]" />
                   </div>
                 </th>
+                <th className="py-4 px-6">Category</th>
                 <th onClick={() => handleSort('email')} className="py-4 px-6 cursor-pointer hover:text-[#171A18] transition-colors">
                   <div className="flex items-center space-x-1">
                     <span>Email</span>
@@ -230,13 +231,13 @@ const StoreManagementPage = () => {
             <tbody className="divide-y divide-[#E2E5DF] text-[#171A18]">
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="py-12 text-center text-[#707873]">
+                  <td colSpan="6" className="py-12 text-center text-[#707873]">
                     Loading store listings...
                   </td>
                 </tr>
               ) : stores.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="py-12 text-center text-[#707873]">
+                  <td colSpan="6" className="py-12 text-center text-[#707873]">
                     No matching store records found.
                   </td>
                 </tr>
@@ -244,6 +245,11 @@ const StoreManagementPage = () => {
                 stores.map((s) => (
                   <tr key={s.id} className="hover:bg-[#F7F6F1] transition-colors">
                     <td className="py-4 px-6 font-display font-bold text-[#171A18] text-sm">{s.name}</td>
+                    <td className="py-4 px-6">
+                      <span className="text-[10px] font-bold text-[#173D32] bg-[#E7F0EB] border border-[#CDE0D5] px-2.5 py-0.5 rounded-full">
+                        {s.category || 'General'}
+                      </span>
+                    </td>
                     <td className="py-4 px-6 font-mono text-[#707873]">{s.email}</td>
                     <td className="py-4 px-6 text-[#707873] max-w-[200px] truncate">{s.address}</td>
                     <td className="py-4 px-6">

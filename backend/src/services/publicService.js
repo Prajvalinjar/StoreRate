@@ -37,51 +37,56 @@ const getPublicStats = async () => {
  * Retrieves public store listings with optional search (q) and pagination.
  * Only APPROVED stores are returned publicly.
  */
-const getPublicStores = async ({ q, page = 1, limit = 12 } = {}) => {
+const getPublicStores = async ({ q, category, minRating, sort = 'recommended', page = 1, limit = 12 } = {}) => {
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 12));
-  const skip = (pageNum - 1) * limitNum;
 
   const where = {
     status: 'APPROVED',
   };
 
-  if (q && q.trim()) {
-    const searchTerm = q.trim();
-    where.AND = [
-      {
-        OR: [
-          { name: { contains: searchTerm, mode: 'insensitive' } },
-          { address: { contains: searchTerm, mode: 'insensitive' } },
-        ],
-      },
-    ];
+  const andConditions = [];
+
+  if (category && category.trim() && category.toLowerCase() !== 'all') {
+    andConditions.push({
+      category: { equals: category.trim(), mode: 'insensitive' },
+    });
   }
 
-  const [total, rawStores] = await Promise.all([
-    prisma.store.count({ where }),
-    prisma.store.findMany({
-      where,
-      orderBy: { name: 'asc' },
-      skip,
-      take: limitNum,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        address: true,
-        status: true,
-        createdAt: true,
-        ratings: {
-          select: {
-            rating: true,
-          },
+  if (q && q.trim()) {
+    const searchTerm = q.trim();
+    andConditions.push({
+      OR: [
+        { name: { contains: searchTerm, mode: 'insensitive' } },
+        { address: { contains: searchTerm, mode: 'insensitive' } },
+        { category: { contains: searchTerm, mode: 'insensitive' } },
+      ],
+    });
+  }
+
+  if (andConditions.length > 0) {
+    where.AND = andConditions;
+  }
+
+  const rawStores = await prisma.store.findMany({
+    where,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      address: true,
+      category: true,
+      status: true,
+      createdAt: true,
+      ratings: {
+        select: {
+          rating: true,
         },
       },
-    }),
-  ]);
+    },
+  });
 
-  const stores = rawStores.map((store) => {
+  let stores = rawStores.map((store) => {
     const totalRatings = store.ratings.length;
     const sum = store.ratings.reduce((acc, r) => acc + r.rating, 0);
     const averageRating = totalRatings > 0 ? Number((sum / totalRatings).toFixed(1)) : 0;
@@ -95,8 +100,32 @@ const getPublicStores = async ({ q, page = 1, limit = 12 } = {}) => {
     };
   });
 
+  // Minimum Rating Filtering
+  if (minRating && !isNaN(Number(minRating))) {
+    const minRatingVal = Number(minRating);
+    stores = stores.filter((s) => s.averageRating >= minRatingVal);
+  }
+
+  // Sorting
+  if (sort === 'rating_desc' || sort === 'highest_rated') {
+    stores.sort((a, b) => b.averageRating - a.averageRating || b.totalRatings - a.totalRatings);
+  } else if (sort === 'ratings_count_desc' || sort === 'most_rated') {
+    stores.sort((a, b) => b.totalRatings - a.totalRatings || b.averageRating - a.averageRating);
+  } else if (sort === 'newest') {
+    stores.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  } else if (sort === 'name_asc') {
+    stores.sort((a, b) => a.name.localeCompare(b.name));
+  } else {
+    // Recommended default: average rating DESC, tie-breaker name ASC
+    stores.sort((a, b) => b.averageRating - a.averageRating || a.name.localeCompare(b.name));
+  }
+
+  const total = stores.length;
+  const skip = (pageNum - 1) * limitNum;
+  const paginatedStores = stores.slice(skip, skip + limitNum);
+
   return {
-    stores,
+    stores: paginatedStores,
     pagination: {
       page: pageNum,
       limit: limitNum,
@@ -104,6 +133,11 @@ const getPublicStores = async ({ q, page = 1, limit = 12 } = {}) => {
       totalPages: Math.ceil(total / limitNum) || 1,
     },
   };
+};
+
+const getTopRatedStores = async (limit = 6) => {
+  const result = await getPublicStores({ sort: 'rating_desc', page: 1, limit });
+  return { stores: result.stores };
 };
 
 /**
@@ -117,6 +151,7 @@ const getPublicStoreById = async (id) => {
       name: true,
       email: true,
       address: true,
+      category: true,
       status: true,
       rejectionReason: true,
       createdAt: true,
@@ -174,5 +209,6 @@ const getPublicStoreById = async (id) => {
 module.exports = {
   getPublicStats,
   getPublicStores,
+  getTopRatedStores,
   getPublicStoreById,
 };

@@ -233,6 +233,7 @@ const AdminDashboardPage = () => {
                 <thead className="bg-[#F7F6F1] border-b border-[#E2E5DF] text-[#707873] uppercase font-bold text-[10px] tracking-wider">
                   <tr>
                     <th className="py-3 px-4">Store Name</th>
+                    <th className="py-3 px-4">Category</th>
                     <th className="py-3 px-4">Owner</th>
                     <th className="py-3 px-4">Business Email</th>
                     <th className="py-3 px-4">Address</th>
@@ -244,6 +245,11 @@ const AdminDashboardPage = () => {
                   {pendingStores.map((s) => (
                     <tr key={s.id} className="hover:bg-[#F7F6F1]/60 transition-colors">
                       <td className="py-3 px-4 font-bold text-[#171A18]">{s.name}</td>
+                      <td className="py-3 px-4">
+                        <span className="text-[10px] font-bold text-[#173D32] bg-[#E7F0EB] border border-[#CDE0D5] px-2.5 py-0.5 rounded-full">
+                          {s.category || 'General'}
+                        </span>
+                      </td>
                       <td className="py-3 px-4 text-[#707873]">{s.owner?.name || 'Owner'}</td>
                       <td className="py-3 px-4 font-mono text-[#707873]">{s.email}</td>
                       <td className="py-3 px-4 text-[#707873] max-w-xs truncate">{s.address}</td>

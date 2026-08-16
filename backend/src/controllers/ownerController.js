@@ -20,7 +20,7 @@ const getDashboard = async (req, res, next) => {
 
 const addStore = async (req, res, next) => {
   try {
-    const { name, email, address } = req.body;
+    const { name, email, address, category } = req.body;
     if (!name || !email || !address) {
       return res.status(400).json({
         status: 'error',
@@ -28,7 +28,7 @@ const addStore = async (req, res, next) => {
       });
     }
 
-    const newStore = await ownerService.createOwnerStore(req.user.id, { name, email, address });
+    const newStore = await ownerService.createOwnerStore(req.user.id, { name, email, address, category });
     return res.status(201).json({
       status: 'success',
       message: 'Store listing submitted for approval.',

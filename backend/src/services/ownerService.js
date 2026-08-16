@@ -15,6 +15,7 @@ const getOwnerDashboard = async (ownerId) => {
       name: true,
       email: true,
       address: true,
+      category: true,
       status: true,
       rejectionReason: true,
       createdAt: true,
@@ -62,6 +63,7 @@ const getOwnerDashboard = async (ownerId) => {
       name: store.name,
       email: store.email,
       address: store.address,
+      category: store.category || 'General',
       status: store.status,
       rejectionReason: store.rejectionReason,
       createdAt: store.createdAt,
@@ -72,7 +74,7 @@ const getOwnerDashboard = async (ownerId) => {
   };
 };
 
-const createOwnerStore = async (ownerId, { name, email, address }) => {
+const createOwnerStore = async (ownerId, { name, email, address, category }) => {
   const existingStore = await prisma.store.findFirst({
     where: { ownerId },
   });
@@ -81,11 +83,14 @@ const createOwnerStore = async (ownerId, { name, email, address }) => {
     throw new OwnerError('You have already registered a store listing.', 400);
   }
 
+  const storeCategory = category && category.trim() ? category.trim() : 'General';
+
   const newStore = await prisma.store.create({
     data: {
       name,
       email: email.toLowerCase(),
       address,
+      category: storeCategory,
       ownerId,
       status: 'PENDING',
     },

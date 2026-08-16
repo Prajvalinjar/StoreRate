@@ -23,3 +23,11 @@ export const getPublicStoreById = async (storeId) => {
   const response = await axiosInstance.get(`/public/stores/${storeId}`);
   return response.data;
 };
+
+/**
+ * Fetches top rated stores for featured showcase and discovery.
+ */
+export const getTopRatedStores = async (limit = 6) => {
+  const response = await axiosInstance.get('/public/stores/top-rated', { params: { limit } });
+  return response.data;
+};

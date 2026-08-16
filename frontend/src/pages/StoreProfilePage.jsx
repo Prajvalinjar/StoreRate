@@ -276,9 +276,14 @@ const StoreProfilePage = () => {
         <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 border-b border-[#E2E5DF] pb-6">
             <div className="space-y-2.5">
-              <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block border border-[#CDE0D5]">
-                VERIFIED BUSINESS PROFILE
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block border border-[#CDE0D5]">
+                  VERIFIED BUSINESS PROFILE
+                </span>
+                <span className="text-[10px] font-extrabold text-[#C9A24A] uppercase tracking-widest bg-[#F5E6C8] px-3.5 py-1.5 rounded-full inline-block border border-[#E8D4A8]">
+                  🏪 {store.category || 'General'}
+                </span>
+              </div>
               <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#171A18] tracking-tight">
                 {store.name}
               </h1>

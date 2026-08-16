@@ -14,8 +14,21 @@ const getStats = async (req, res, next) => {
 
 const listStores = async (req, res, next) => {
   try {
-    const { q, page, limit } = req.query;
-    const result = await publicService.getPublicStores({ q, page, limit });
+    const { q, category, minRating, sort, page, limit } = req.query;
+    const result = await publicService.getPublicStores({ q, category, minRating, sort, page, limit });
+    return res.status(200).json({
+      status: 'success',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const listTopRatedStores = async (req, res, next) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit, 10) : 6;
+    const result = await publicService.getTopRatedStores(limit);
     return res.status(200).json({
       status: 'success',
       data: result,
@@ -47,5 +60,6 @@ const getStoreById = async (req, res, next) => {
 module.exports = {
   getStats,
   listStores,
+  listTopRatedStores,
   getStoreById,
 };

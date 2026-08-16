@@ -30,6 +30,7 @@ const getDashboardMetrics = async () => {
         id: true,
         name: true,
         address: true,
+        category: true,
         ratings: {
           select: { rating: true },
         },
@@ -50,6 +51,7 @@ const getDashboardMetrics = async () => {
       id: s.id,
       name: s.name,
       address: s.address,
+      category: s.category || 'General',
       averageRating,
       totalRatings: total,
     };
@@ -70,7 +72,14 @@ const getPendingStores = async () => {
   const stores = await prisma.store.findMany({
     where: { status: 'PENDING' },
     orderBy: { createdAt: 'desc' },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      address: true,
+      category: true,
+      status: true,
+      createdAt: true,
       owner: {
         select: { id: true, name: true, email: true },
       },

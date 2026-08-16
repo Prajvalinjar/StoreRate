@@ -40,6 +40,7 @@ model Store {
   name            String
   email           String
   address         String
+  category        String      @default("General")
   status          StoreStatus @default(APPROVED)
   rejectionReason String?
   ownerId         String

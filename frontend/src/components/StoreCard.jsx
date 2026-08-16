@@ -63,7 +63,7 @@ const StoreCard = ({ store, onRate, onViewStore }) => {
         
         {/* Category Pill */}
         <div className="absolute top-3 left-3 bg-[#173D32]/90 backdrop-blur-xs text-[#E7F0EB] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border border-[#2F6654] z-10">
-          {visual.category}
+          {store.category || visual.category}
         </div>
 
         {/* Rating Floating Badge */}

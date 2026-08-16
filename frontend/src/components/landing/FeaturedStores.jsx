@@ -1,39 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, ArrowRight, Star } from 'lucide-react';
-import StarRating from '../StarRating';
-import SafeImage from '../SafeImage';
+import { getTopRatedStores } from '../../api/publicService';
+import StoreCard from '../StoreCard';
+import { ArrowRight, Store, RefreshCw } from 'lucide-react';
 
 const FeaturedStores = () => {
-  const stores = [
-    {
-      id: 'store-1',
-      name: 'Demo StoreRate Market',
-      address: 'Kolhapur, Maharashtra',
-      category: 'Supermarket & Grocery',
-      averageRating: 4.7,
-      totalRatings: 3,
-      image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      id: 'store-2',
-      name: 'FreshMart Grocery Store',
-      address: 'Main Street Market, Kolhapur',
-      category: 'Grocery & Essentials',
-      averageRating: 4.0,
-      totalRatings: 2,
-      image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      id: 'store-3',
-      name: 'City Electronics Superstore',
-      address: 'Commercial Hub, Pune',
-      category: 'Electronics & Tech',
-      averageRating: 5.0,
-      totalRatings: 1,
-      image: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=800&q=80',
-    },
-  ];
+  const [stores, setStores] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTopStores = async () => {
+      setLoading(true);
+      try {
+        const response = await getTopRatedStores(3);
+        if (response.status === 'success') {
+          setStores(response.data.stores || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch top featured stores:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTopStores();
+  }, []);
 
   return (
     <section className="py-16 sm:py-24 bg-[#F7F6F1] border-t border-[#E2E5DF]">
@@ -62,52 +52,32 @@ const FeaturedStores = () => {
         </div>
 
         {/* Store Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {stores.map((store) => (
-            <div
-              key={store.id}
-              className="bg-white border border-[#E2E5DF] rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:border-[#173D32]/40 transition-all duration-300 flex flex-col justify-between group text-left"
-            >
-              {/* Photo Box */}
-              <div className="relative h-48 w-full bg-[#173D32] overflow-hidden">
-                <SafeImage
-                  src={store.image}
-                  alt={store.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
-                  category={store.category.includes('Grocery') ? 'grocery' : store.category.includes('Tech') ? 'electronics' : 'fashion'}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
-                <span className="absolute top-3 left-3 bg-[#173D32]/90 backdrop-blur-xs text-[#E7F0EB] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border border-[#2F6654] z-10">
-                  {store.category}
-                </span>
-              </div>
-
-              {/* Body Box */}
-              <div className="p-5 space-y-4">
-                <div className="space-y-1">
-                  <h3 className="font-display text-xl font-bold text-[#171A18] tracking-tight line-clamp-1 group-hover:text-[#173D32] transition-colors">
-                    {store.name}
-                  </h3>
-                  <p className="text-xs text-[#707873] flex items-center space-x-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#9CA59E] shrink-0" />
-                    <span>{store.address}</span>
-                  </p>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-white border border-[#E2E5DF] rounded-2xl p-5 space-y-4 animate-pulse">
+                <div className="h-44 bg-[#E7F0EB] rounded-xl w-full" />
+                <div className="space-y-2">
+                  <div className="h-5 bg-[#E7F0EB] rounded w-3/4" />
+                  <div className="h-3 bg-[#E7F0EB] rounded w-1/2" />
                 </div>
-
-                <div className="pt-3 border-t border-[#E2E5DF] flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Star className="w-4 h-4 fill-[#C9A24A] text-[#C9A24A]" />
-                    <span className="text-lg font-black text-[#171A18]">{store.averageRating.toFixed(1)}</span>
-                    <StarRating value={store.averageRating} readOnly size="xs" />
-                  </div>
-                  <span className="text-xs text-[#707873] font-mono">
-                    ({store.totalRatings})
-                  </span>
-                </div>
+                <div className="h-10 bg-[#E7F0EB] rounded-xl w-full" />
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : stores.length === 0 ? (
+          <div className="bg-white border border-[#E2E5DF] rounded-2xl p-12 text-center space-y-3 shadow-xs">
+            <Store className="w-8 h-8 text-[#173D32] mx-auto" />
+            <p className="font-display text-base font-bold text-[#171A18]">No featured stores available</p>
+            <p className="text-xs text-[#707873]">Store listings will appear here once approved by administrators.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {stores.map((store) => (
+              <StoreCard key={store.id} store={store} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
