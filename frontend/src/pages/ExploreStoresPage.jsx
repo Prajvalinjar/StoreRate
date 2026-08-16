@@ -152,7 +152,7 @@ const ExploreStoresPage = () => {
     <div className="min-h-screen bg-[#F7F6F1] py-8 px-4 sm:px-6 lg:px-8 text-[#171A18] text-left">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header Banner */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E2E5DF] pb-6">
+        <div className="border-b border-[#E2E5DF] pb-6">
           <div className="space-y-2">
             <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block border border-[#CDE0D5]">
               INTELLIGENT STORE DISCOVERY
@@ -164,13 +164,6 @@ const ExploreStoresPage = () => {
               Discover verified businesses, filter by category & rating score, and explore community recommendations.
             </p>
           </div>
-
-          {!loading && (
-            <div className="text-[11px] font-bold tracking-wider uppercase text-[#173D32] bg-white border border-[#E2E5DF] px-4 py-2 rounded-xl shrink-0 shadow-xs self-start md:self-auto flex items-center space-x-2">
-              <Store className="w-3.5 h-3.5 text-[#C9A24A]" />
-              <span>{pagination.total} {pagination.total === 1 ? 'STORE FOUND' : 'STORES FOUND'}</span>
-            </div>
-          )}
         </div>
 
         {/* Top Rated Stores Featured Section (if no query filters active) */}
@@ -201,112 +194,105 @@ const ExploreStoresPage = () => {
           </div>
         )}
 
-        {/* Search & Discovery Filter Controls Toolbar */}
-        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
-          {/* Main Search Input */}
-          <div className="relative flex items-center">
-            <Search className="w-4 h-4 text-[#707873] absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search stores by name, location, or keyword (e.g. Electronics, Kolhapur, Bakery)..."
-              className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl py-3 pl-10 pr-10 text-xs sm:text-sm text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32] focus:ring-1 focus:ring-[#173D32]/20 transition-colors"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery('');
-                  setDebouncedQuery('');
-                  updateQueryParams({ q: '' });
-                }}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#707873] hover:text-[#171A18] p-1 transition-colors cursor-pointer"
-                aria-label="Clear search input"
+        {/* Compact Discovery Filter Toolbar */}
+        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5">
+          {/* ROW 1: Search + Category + Rating */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+            {/* Search Input */}
+            <div className="md:col-span-6 relative flex items-center">
+              <Search className="w-4 h-4 text-[#707873] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search stores, categories, locations..."
+                className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl py-2.5 pl-10 pr-10 text-xs sm:text-sm text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32] focus:ring-1 focus:ring-[#173D32]/20 transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setDebouncedQuery('');
+                    updateQueryParams({ q: '' });
+                  }}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#707873] hover:text-[#171A18] p-1 transition-colors cursor-pointer"
+                  aria-label="Clear search input"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Category Dropdown (SINGLE CATEGORY SELECTOR) */}
+            <div className="md:col-span-3">
+              <select
+                value={categoryParam}
+                onChange={(e) => handleCategorySelect(e.target.value)}
+                className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#171A18] focus:outline-none focus:border-[#173D32] cursor-pointer"
               >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+                <option value="All">All Categories</option>
+                {STORE_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
 
-          {/* Category Quick Pills Bar */}
-          <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none text-xs">
-            <button
-              onClick={() => handleCategorySelect('All')}
-              className={`px-3.5 py-1.5 rounded-full font-bold transition-colors whitespace-nowrap cursor-pointer ${
-                categoryParam === 'All'
-                  ? 'bg-[#173D32] text-white shadow-xs'
-                  : 'bg-[#F7F6F1] text-[#707873] hover:text-[#171A18] hover:bg-[#E2E5DF] border border-[#E2E5DF]'
-              }`}
-            >
-              All Categories
-            </button>
-            {STORE_CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => handleCategorySelect(cat)}
-                className={`px-3.5 py-1.5 rounded-full font-bold transition-colors whitespace-nowrap cursor-pointer ${
-                  categoryParam.toLowerCase() === cat.toLowerCase()
-                    ? 'bg-[#173D32] text-white shadow-xs'
-                    : 'bg-[#F7F6F1] text-[#707873] hover:text-[#171A18] hover:bg-[#E2E5DF] border border-[#E2E5DF]'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Dropdown Filters & Sorting Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#E2E5DF] text-xs">
-
-            {/* Minimum Rating Dropdown */}
-            <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-[#707873] uppercase tracking-wider">
-                Minimum Rating
-              </label>
+            {/* Rating Dropdown */}
+            <div className="md:col-span-3">
               <select
                 value={minRatingParam}
                 onChange={(e) => handleRatingFilterChange(e.target.value)}
-                className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-3 py-2 text-xs font-medium text-[#171A18] focus:outline-none focus:border-[#173D32]"
+                className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#171A18] focus:outline-none focus:border-[#173D32] cursor-pointer"
               >
-                <option value="all">Any Rating</option>
-                <option value="4">4.0★ & above</option>
-                <option value="3">3.0★ & above</option>
-                <option value="2">2.0★ & above</option>
-              </select>
-            </div>
-
-            {/* Sort By Dropdown */}
-            <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-[#707873] uppercase tracking-wider">
-                Sort By
-              </label>
-              <select
-                value={sortParam}
-                onChange={(e) => handleSortChange(e.target.value)}
-                className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-3 py-2 text-xs font-medium text-[#171A18] focus:outline-none focus:border-[#173D32]"
-              >
-                <option value="recommended">Recommended</option>
-                <option value="rating_desc">Highest Rated</option>
-                <option value="ratings_count_desc">Most Rated</option>
-                <option value="newest">Newest</option>
-                <option value="name_asc">Name A–Z</option>
+                <option value="all">All Ratings</option>
+                <option value="4.5">4.5+ ★</option>
+                <option value="4">4.0+ ★</option>
+                <option value="3.5">3.5+ ★</option>
+                <option value="3">3.0+ ★</option>
+                <option value="2">2.0+ ★</option>
               </select>
             </div>
           </div>
 
-          {/* Active Filter Clear Control */}
-          {hasActiveFilters && (
-            <div className="pt-2 flex justify-end border-t border-[#E2E5DF]">
-              <button
-                onClick={handleClearAllFilters}
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-extrabold rounded-xl text-xs transition-colors cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-                <span>Clear All Filters</span>
-              </button>
+          {/* ROW 2: Result Count + Sort Dropdown + Clear Filters */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[#E2E5DF] text-xs">
+            {/* Result Count */}
+            <div className="text-xs font-extrabold text-[#173D32] flex items-center space-x-2">
+              <Store className="w-4 h-4 text-[#C9A24A]" />
+              <span>{pagination.total} {pagination.total === 1 ? 'store found' : 'stores found'}</span>
             </div>
-          )}
+
+            <div className="flex flex-wrap items-center gap-3 self-end sm:self-auto">
+              {/* Sort Dropdown */}
+              <div className="flex items-center space-x-1.5">
+                <SlidersHorizontal className="w-3.5 h-3.5 text-[#707873]" />
+                <select
+                  value={sortParam}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-3 py-1.5 text-xs font-semibold text-[#171A18] focus:outline-none focus:border-[#173D32] cursor-pointer"
+                >
+                  <option value="recommended">Recommended</option>
+                  <option value="newest_added">Newest Added</option>
+                  <option value="highest_rated">Highest Rated</option>
+                  <option value="most_rated">Most Rated</option>
+                  <option value="name_asc">Name A–Z</option>
+                  <option value="name_desc">Name Z–A</option>
+                </select>
+              </div>
+
+              {/* Clear Filters Button */}
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearAllFilters}
+                  className="inline-flex items-center space-x-1 px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-extrabold rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Clear Filters</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Error State */}

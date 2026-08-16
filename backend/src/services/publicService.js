@@ -112,10 +112,12 @@ const getPublicStores = async ({ q, category, minRating, sort = 'recommended', p
     stores.sort((a, b) => b.averageRating - a.averageRating || b.totalRatings - a.totalRatings);
   } else if (sort === 'ratings_count_desc' || sort === 'most_rated') {
     stores.sort((a, b) => b.totalRatings - a.totalRatings || b.averageRating - a.averageRating);
-  } else if (sort === 'newest') {
+  } else if (sort === 'newest' || sort === 'newest_added') {
     stores.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } else if (sort === 'name_asc') {
     stores.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (sort === 'name_desc') {
+    stores.sort((a, b) => b.name.localeCompare(a.name));
   } else {
     // Recommended default: average rating DESC, tie-breaker name ASC
     stores.sort((a, b) => b.averageRating - a.averageRating || a.name.localeCompare(b.name));

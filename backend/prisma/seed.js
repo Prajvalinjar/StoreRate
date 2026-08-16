@@ -4,6 +4,32 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 const SAMPLE_STORES = [
+  // General
+  {
+    name: 'Demo StoreRate Market',
+    email: 'demo.market@storerate-demo.in',
+    address: 'Main Market Yard, Kolhapur, Maharashtra',
+    category: 'General',
+    imageUrl: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Panchganga Trade Center',
+    email: 'panchganga.trade@storerate-demo.in',
+    address: 'Shahupuri Commercial Hub, Kolhapur, Maharashtra',
+    category: 'General',
+    imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Central Business Hub',
+    email: 'central.hub@storerate-demo.in',
+    address: 'Shivajinagar Square, Pune, Maharashtra',
+    category: 'General',
+    imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
   // Restaurant
   {
     name: 'Rankala Family Restaurant',
@@ -35,6 +61,14 @@ const SAMPLE_STORES = [
     address: 'Powai Naka, Satara, Maharashtra',
     category: 'Restaurant',
     imageUrl: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Konkan Kinara Seafood',
+    email: 'konkan.kinara@storerate-demo.in',
+    address: 'Bandra West, Mumbai, Maharashtra',
+    category: 'Restaurant',
+    imageUrl: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
     status: 'APPROVED',
   },
 
@@ -133,6 +167,14 @@ const SAMPLE_STORES = [
     imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80',
     status: 'APPROVED',
   },
+  {
+    name: 'Mahalaxmi Women Care & Salon',
+    email: 'mahalaxmi.women@storerate-demo.in',
+    address: 'Gaon Bhag, Sangli, Maharashtra',
+    category: 'Beauty',
+    imageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
 
   // Healthcare
   {
@@ -151,6 +193,14 @@ const SAMPLE_STORES = [
     imageUrl: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?auto=format&fit=crop&w=800&q=80',
     status: 'APPROVED',
   },
+  {
+    name: 'Sahyadri Medical & Wellness',
+    email: 'sahyadri.medical@storerate-demo.in',
+    address: 'Powai Naka, Satara, Maharashtra',
+    category: 'Healthcare',
+    imageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
 
   // Education
   {
@@ -167,6 +217,14 @@ const SAMPLE_STORES = [
     address: 'Bindu Chowk, Kolhapur, Maharashtra',
     category: 'Education',
     imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Nashik Science Classes',
+    email: 'nashik.science@storerate-demo.in',
+    address: 'College Road, Nashik, Maharashtra',
+    category: 'Education',
+    imageUrl: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=800&q=80',
     status: 'APPROVED',
   },
 
@@ -205,6 +263,14 @@ const SAMPLE_STORES = [
     imageUrl: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=800&q=80',
     status: 'APPROVED',
   },
+  {
+    name: 'Nagpur Wheel Care',
+    email: 'nagpur.wheel@storerate-demo.in',
+    address: 'Khamla Road, Nagpur, Maharashtra',
+    category: 'Automotive',
+    imageUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
 
   // Home & Furniture
   {
@@ -215,10 +281,44 @@ const SAMPLE_STORES = [
     imageUrl: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80',
     status: 'APPROVED',
   },
+  {
+    name: 'Mahalaxmi Furniture Studio',
+    email: 'mahalaxmi.furniture@storerate-demo.in',
+    address: 'Rajarampuri 5th Lane, Kolhapur, Maharashtra',
+    category: 'Home & Furniture',
+    imageUrl: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Deccan Decor & Interior',
+    email: 'deccan.decor@storerate-demo.in',
+    address: 'Jalna Road, Chhatrapati Sambhajinagar, Maharashtra',
+    category: 'Home & Furniture',
+    imageUrl: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Other
+  {
+    name: 'Western Maharashtra Art & Craft',
+    email: 'wm.crafts@storerate-demo.in',
+    address: 'Bhavani Mandap, Kolhapur, Maharashtra',
+    category: 'Other',
+    imageUrl: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Pune Book & Stationery World',
+    email: 'pune.books@storerate-demo.in',
+    address: 'Appa Balwant Chowk, Pune, Maharashtra',
+    category: 'Other',
+    imageUrl: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
 ];
 
 async function main() {
-  console.log('Seeding sample discovery stores into PostgreSQL...');
+  console.log('Seeding authentic Indian discovery stores into PostgreSQL...');
 
   // Ensure a demo store owner account exists
   let demoOwner = await prisma.user.findFirst({

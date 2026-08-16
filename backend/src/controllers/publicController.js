@@ -14,8 +14,9 @@ const getStats = async (req, res, next) => {
 
 const listStores = async (req, res, next) => {
   try {
-    const { q, category, minRating, sort, page, limit } = req.query;
-    const result = await publicService.getPublicStores({ q, category, minRating, sort, page, limit });
+    const { q, category, minRating, rating, sort, page, limit } = req.query;
+    const ratingFilter = rating || minRating;
+    const result = await publicService.getPublicStores({ q, category, minRating: ratingFilter, sort, page, limit });
     return res.status(200).json({
       status: 'success',
       data: result,
