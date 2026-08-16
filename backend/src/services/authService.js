@@ -14,7 +14,15 @@ const sanitizeUser = (user) => {
   return sanitized;
 };
 
-const registerUser = async ({ name, email, address, password }) => {
+const registerUser = async ({ name, email, address, password, role = 'USER' }) => {
+  // Security protection: NEVER allow ADMIN role through public registration
+  if (role === 'ADMIN') {
+    throw new AuthError('Invalid registration role. Administrator accounts cannot be created via public registration.', 400);
+  }
+  if (role !== 'USER' && role !== 'STORE_OWNER') {
+    throw new AuthError('Invalid registration role.', 400);
+  }
+
   const existingUser = await prisma.user.findUnique({
     where: { email: email.toLowerCase() },
   });
@@ -25,14 +33,13 @@ const registerUser = async ({ name, email, address, password }) => {
 
   const hashedPassword = await hashPassword(password);
 
-  // Force public registration role to USER
   const user = await prisma.user.create({
     data: {
       name,
       email: email.toLowerCase(),
       address,
       passwordHash: hashedPassword,
-      role: 'USER',
+      role,
     },
   });
 

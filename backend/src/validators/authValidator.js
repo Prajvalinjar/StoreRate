@@ -30,6 +30,9 @@ const registerSchema = z.object({
   email: emailSchema,
   address: addressSchema,
   password: passwordSchema,
+  role: z.enum(['USER', 'STORE_OWNER'], {
+    invalid_type_error: 'Invalid registration role. Must be USER or STORE_OWNER.',
+  }).optional().default('USER'),
 });
 
 const loginSchema = z.object({

@@ -8,6 +8,7 @@ const RegisterPage = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
+    role: 'USER',
     name: '',
     email: '',
     address: '',
@@ -21,6 +22,12 @@ const RegisterPage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setError('');
+    setValidationErrors([]);
+  };
+
+  const handleRoleSelect = (selectedRole) => {
+    setFormData((prev) => ({ ...prev, role: selectedRole }));
     setError('');
     setValidationErrors([]);
   };
@@ -39,8 +46,13 @@ const RegisterPage = () => {
     setValidationErrors([]);
 
     try {
-      await register(formData);
-      navigate('/dashboard', { replace: true });
+      const res = await register(formData);
+      const userRole = res?.user?.role || formData.role;
+      if (userRole === 'STORE_OWNER') {
+        navigate('/owner', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (err) {
       if (err.response?.data?.errors) {
         setValidationErrors(err.response.data.errors);
@@ -74,7 +86,7 @@ const RegisterPage = () => {
                 Join the trusted rating community.
               </h2>
               <p className="text-xs sm:text-sm text-[#D0E2DB] font-normal leading-relaxed">
-                Create your StoreRate account to discover local stores, share ratings, and help fellow consumers.
+                Create your StoreRate account to discover local stores, share ratings, or manage your store's reputation.
               </p>
             </div>
           </div>
@@ -82,9 +94,9 @@ const RegisterPage = () => {
           <div className="pt-8 border-t border-[#2F6654] space-y-2 relative z-10 text-xs text-[#A3C2B6]">
             <div className="flex items-center space-x-2 text-[#C9A24A] font-bold">
               <ShieldCheck className="w-4 h-4" />
-              <span>Authentic Reviews Only</span>
+              <span>Authentic Reviews & Governance</span>
             </div>
-            <p className="text-[11px]">Strict 1 rating per store rule per registered account.</p>
+            <p className="text-[11px]">Strict 1 rating per store rule per verified account.</p>
           </div>
         </div>
 
@@ -94,7 +106,7 @@ const RegisterPage = () => {
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#171A18] tracking-tight">
               Create an Account
             </h1>
-            <p className="text-xs text-[#707873]">Enter your details to register as a StoreRate member</p>
+            <p className="text-xs text-[#707873]">Select your account type and enter details below</p>
           </div>
 
           {error && (
@@ -113,7 +125,75 @@ const RegisterPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-3.5 text-xs text-left">
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs text-left">
+            {/* ACCOUNT TYPE SELECTION CARDS */}
+            <div className="space-y-2">
+              <label className="block text-[11px] font-bold text-[#707873] uppercase tracking-wider">
+                Account Type
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="Account Type Selection">
+                {/* Customer Button Card */}
+                <button
+                  type="button"
+                  onClick={() => handleRoleSelect('USER')}
+                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-start space-x-3 ${
+                    formData.role === 'USER'
+                      ? 'bg-[#E7F0EB] border-[#173D32] ring-1 ring-[#173D32] shadow-xs'
+                      : 'bg-[#F7F6F1] border-[#E2E5DF] hover:border-[#173D32]/40'
+                  }`}
+                  aria-checked={formData.role === 'USER'}
+                  role="radio"
+                >
+                  <div className={`p-2 rounded-xl shrink-0 ${
+                    formData.role === 'USER' ? 'bg-[#173D32] text-white' : 'bg-white border border-[#E2E5DF] text-[#707873]'
+                  }`}>
+                    <User className="w-4 h-4" />
+                  </div>
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center space-x-1.5 font-bold text-xs text-[#171A18]">
+                      <span>Customer</span>
+                      {formData.role === 'USER' && (
+                        <span className="text-[10px] bg-[#173D32] text-white px-1.5 py-0.2 rounded font-extrabold">✓</span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-[#707873] leading-tight">
+                      Browse local stores, view reputation & submit ratings.
+                    </p>
+                  </div>
+                </button>
+
+                {/* Store Owner Button Card */}
+                <button
+                  type="button"
+                  onClick={() => handleRoleSelect('STORE_OWNER')}
+                  className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-start space-x-3 ${
+                    formData.role === 'STORE_OWNER'
+                      ? 'bg-[#F5E6C8] border-[#C9A24A] ring-1 ring-[#C9A24A] shadow-xs'
+                      : 'bg-[#F7F6F1] border-[#E2E5DF] hover:border-[#C9A24A]/40'
+                  }`}
+                  aria-checked={formData.role === 'STORE_OWNER'}
+                  role="radio"
+                >
+                  <div className={`p-2 rounded-xl shrink-0 ${
+                    formData.role === 'STORE_OWNER' ? 'bg-[#C9A24A] text-white' : 'bg-white border border-[#E2E5DF] text-[#707873]'
+                  }`}>
+                    <Store className="w-4 h-4" />
+                  </div>
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="flex items-center space-x-1.5 font-bold text-xs text-[#171A18]">
+                      <span>Store Owner</span>
+                      {formData.role === 'STORE_OWNER' && (
+                        <span className="text-[10px] bg-[#C9A24A] text-white px-1.5 py-0.2 rounded font-extrabold">✓</span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-[#707873] leading-tight">
+                      List your store & manage business reputation portal.
+                    </p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
             {/* Full Name */}
             <div className="space-y-1">
               <div className="flex justify-between items-center text-[11px] font-bold text-[#707873] uppercase tracking-wider">
