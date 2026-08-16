@@ -123,8 +123,8 @@ const getPublicStores = async ({ q, category, minRating, sort = 'recommended', p
 
     return {
       ...storeData,
-      city: store.city || 'Kolhapur',
-      isVerified: store.isVerified !== undefined ? store.isVerified : true,
+      city: store.city ? store.city.trim() : null,
+      isVerified: Boolean(store.isVerified),
       averageRating,
       totalRatings: v,
       ratingCount: v,
@@ -246,8 +246,8 @@ const getPublicStoreById = async (id) => {
 
   return {
     ...storeData,
-    city: store.city || 'Kolhapur',
-    isVerified: store.isVerified !== undefined ? store.isVerified : true,
+    city: store.city ? store.city.trim() : null,
+    isVerified: Boolean(store.isVerified),
     averageRating,
     totalRatings,
     ratingCount: totalRatings,

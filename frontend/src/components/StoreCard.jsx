@@ -74,9 +74,9 @@ const StoreCard = ({ store, onRate, isSaved = false, onToggleFavorite, savingFav
           <span className="bg-[#173D32]/90 backdrop-blur-xs text-[#E7F0EB] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border border-[#2F6654]">
             {store.category || visual.category}
           </span>
-          {store.isVerified !== false && (
+          {store.isVerified === true && (
             <span className="bg-[#C9A24A]/90 backdrop-blur-xs text-[#173D32] text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full border border-amber-300">
-              ✓ Verified
+              ✓ Verified Business
             </span>
           )}
         </div>

@@ -76,14 +76,14 @@ model Store {
   name            String
   email           String
   address         String
-  city            String?     @default("Kolhapur")
+  city            String?
   phone           String?
   category        String      @default("General")
   description     String?
   imageUrl        String?
   status          StoreStatus @default(APPROVED)
   rejectionReason String?
-  isVerified      Boolean     @default(true)
+  isVerified      Boolean     @default(false)
   ownerId         String
   owner           User        @relation("StoreOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt       DateTime    @default(now())

@@ -80,8 +80,10 @@ const getPendingStores = async () => {
       name: true,
       email: true,
       address: true,
+      city: true,
       category: true,
       status: true,
+      isVerified: true,
       createdAt: true,
       owner: {
         select: { id: true, name: true, email: true },
@@ -164,6 +166,50 @@ const rejectStore = async (storeId, reason) => {
   } catch (err) {
     console.error('Failed to send store rejection notification:', err);
   }
+
+  return updatedStore;
+};
+
+const verifyStore = async (storeId) => {
+  const store = await prisma.store.findUnique({
+    where: { id: storeId },
+  });
+
+  if (!store) {
+    throw new AdminError('Store not found', 404);
+  }
+
+  const updatedStore = await prisma.store.update({
+    where: { id: storeId },
+    data: { isVerified: true },
+    include: {
+      owner: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+  });
+
+  return updatedStore;
+};
+
+const unverifyStore = async (storeId) => {
+  const store = await prisma.store.findUnique({
+    where: { id: storeId },
+  });
+
+  if (!store) {
+    throw new AdminError('Store not found', 404);
+  }
+
+  const updatedStore = await prisma.store.update({
+    where: { id: storeId },
+    data: { isVerified: false },
+    include: {
+      owner: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+  });
 
   return updatedStore;
 };
@@ -393,7 +439,7 @@ const getStoreById = async (id) => {
   };
 };
 
-const createStore = async ({ name, email, address, ownerId }) => {
+const createStore = async ({ name, email, address, ownerId, city }) => {
   const owner = await prisma.user.findUnique({
     where: { id: ownerId },
   });
@@ -411,6 +457,8 @@ const createStore = async ({ name, email, address, ownerId }) => {
       name,
       email: email.toLowerCase(),
       address,
+      city: city && city.trim() ? city.trim() : null,
+      isVerified: false,
       ownerId,
     },
     include: {
@@ -570,6 +618,8 @@ module.exports = {
   getPendingStores,
   approveStore,
   rejectStore,
+  verifyStore,
+  unverifyStore,
   getReviewReports,
   dismissReport,
   hideReview,

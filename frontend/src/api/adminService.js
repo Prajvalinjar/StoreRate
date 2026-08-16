@@ -50,6 +50,16 @@ export const rejectStore = async (storeId, reason) => {
   return response.data;
 };
 
+export const verifyStore = async (storeId) => {
+  const response = await axiosInstance.put(`/admin/stores/${storeId}/verify`);
+  return response.data;
+};
+
+export const unverifyStore = async (storeId) => {
+  const response = await axiosInstance.put(`/admin/stores/${storeId}/unverify`);
+  return response.data;
+};
+
 export const getReviewReports = async () => {
   const response = await axiosInstance.get('/admin/review-reports');
   return response.data;

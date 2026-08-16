@@ -203,6 +203,46 @@ const rejectStore = async (req, res, next) => {
   }
 };
 
+const verifyStore = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const store = await adminService.verifyStore(id);
+    return res.status(200).json({
+      status: 'success',
+      message: 'Store verified successfully as a Verified Business.',
+      data: { store },
+    });
+  } catch (error) {
+    if (error instanceof adminService.AdminError) {
+      return res.status(error.statusCode).json({
+        status: 'error',
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+const unverifyStore = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const store = await adminService.unverifyStore(id);
+    return res.status(200).json({
+      status: 'success',
+      message: 'Store verification removed.',
+      data: { store },
+    });
+  } catch (error) {
+    if (error instanceof adminService.AdminError) {
+      return res.status(error.statusCode).json({
+        status: 'error',
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 const listReviewReports = async (req, res, next) => {
   try {
     const result = await adminService.getReviewReports();
@@ -286,6 +326,8 @@ module.exports = {
   listPendingStores,
   approveStore,
   rejectStore,
+  verifyStore,
+  unverifyStore,
   listReviewReports,
   dismissReviewReport,
   hideReportedReview,

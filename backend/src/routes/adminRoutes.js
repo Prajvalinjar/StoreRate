@@ -12,6 +12,8 @@ const {
   listPendingStores,
   approveStore,
   rejectStore,
+  verifyStore,
+  unverifyStore,
   listReviewReports,
   dismissReviewReport,
   hideReportedReview,
@@ -28,10 +30,12 @@ router.get('/users', listUsers);
 router.post('/users', addUser);
 router.get('/users/:id', getUser);
 
-// Store Approval Workflow & Management Routes
+// Store Approval & Verification Workflow Routes
 router.get('/stores/pending', listPendingStores);
 router.put('/stores/:id/approve', approveStore);
 router.put('/stores/:id/reject', rejectStore);
+router.put('/stores/:id/verify', verifyStore);
+router.put('/stores/:id/unverify', unverifyStore);
 router.get('/stores', listStores);
 router.post('/stores', addStore);
 router.get('/stores/:id', getStore);

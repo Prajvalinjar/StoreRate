@@ -387,9 +387,15 @@ const StoreProfilePage = () => {
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 border-b border-[#E2E5DF] pb-6">
             <div className="space-y-2.5">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block border border-[#CDE0D5]">
-                  VERIFIED BUSINESS PROFILE
-                </span>
+                {store.isVerified === true ? (
+                  <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block border border-[#CDE0D5]">
+                    ✓ VERIFIED BUSINESS
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block border border-[#CDE0D5]">
+                    APPROVED BY STORERATE
+                  </span>
+                )}
                 <span className="text-[10px] font-extrabold text-[#C9A24A] uppercase tracking-widest bg-[#F5E6C8] px-3.5 py-1.5 rounded-full inline-block border border-[#E8D4A8]">
                   🏪 {store.category || 'General'}
                 </span>
@@ -399,7 +405,7 @@ const StoreProfilePage = () => {
               </h1>
               <p className="text-xs sm:text-sm text-[#707873] flex items-center space-x-1.5 font-normal">
                 <MapPin className="w-4 h-4 text-[#9CA59E] shrink-0" />
-                <span>{store.address}</span>
+                <span>{store.address}{store.city ? `, ${store.city}` : ''}</span>
               </p>
             </div>
 

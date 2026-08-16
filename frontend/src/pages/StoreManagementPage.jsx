@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getStores, createStore, getUsers } from '../api/adminService';
-import { Store, Plus, Search, ArrowUpDown, ChevronLeft, ChevronRight, X, Star, AlertCircle, UserPlus } from 'lucide-react';
+import { getStores, createStore, getUsers, verifyStore, unverifyStore } from '../api/adminService';
+import { Store, Plus, Search, ArrowUpDown, ChevronLeft, ChevronRight, X, Star, AlertCircle, UserPlus, ShieldCheck, ShieldOff, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const StoreManagementPage = () => {
@@ -10,6 +10,7 @@ const StoreManagementPage = () => {
   const [sort, setSort] = useState({ sortBy: 'createdAt', sortOrder: 'desc' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionStoreId, setActionStoreId] = useState(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,6 +20,7 @@ const StoreManagementPage = () => {
     name: '',
     email: '',
     address: '',
+    city: '',
     ownerId: '',
   });
   const [modalLoading, setModalLoading] = useState(false);
@@ -72,6 +74,22 @@ const StoreManagementPage = () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isModalOpen]);
+
+  const handleToggleVerification = async (storeId, currentlyVerified) => {
+    setActionStoreId(storeId);
+    try {
+      if (currentlyVerified) {
+        await unverifyStore(storeId);
+      } else {
+        await verifyStore(storeId);
+      }
+      await fetchStores();
+    } catch (err) {
+      console.error('Failed to toggle store verification:', err);
+    } finally {
+      setActionStoreId(null);
+    }
+  };
 
   const fetchStoreOwners = async () => {
     setLoadingOwners(true);
@@ -127,7 +145,7 @@ const StoreManagementPage = () => {
       const response = await createStore(modalFormData);
       if (response.status === 'success') {
         setIsModalOpen(false);
-        setModalFormData({ name: '', email: '', address: '', ownerId: '' });
+        setModalFormData({ name: '', email: '', address: '', city: '', ownerId: '' });
         fetchStores();
       }
     } catch (err) {
@@ -149,11 +167,11 @@ const StoreManagementPage = () => {
             ADMINISTRATION
           </span>
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#171A18] tracking-tight">Store Operations</h1>
-          <p className="text-xs text-[#707873]">Manage store listings, search locations, and link store owners</p>
+          <p className="text-xs text-[#707873]">Manage store listings, locations, verification status, and owner assignments</p>
         </div>
         <button
           onClick={handleOpenModal}
-          className="inline-flex items-center justify-center space-x-2 px-5 py-2.5 bg-[#173D32] hover:bg-[#2F6654] text-white font-bold rounded-xl text-xs transition-colors shadow-xs self-start sm:self-auto"
+          className="inline-flex items-center justify-center space-x-2 px-5 py-2.5 bg-[#173D32] hover:bg-[#2F6654] text-white font-bold rounded-xl text-xs transition-colors shadow-xs self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Add New Store</span>
@@ -187,7 +205,7 @@ const StoreManagementPage = () => {
         <input
           type="text"
           name="address"
-          placeholder="Filter by Address..."
+          placeholder="Filter by Address or City..."
           value={filters.address}
           onChange={handleFilterChange}
           className="bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-3.5 py-2.5 text-xs text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32]"
@@ -206,26 +224,16 @@ const StoreManagementPage = () => {
                     <ArrowUpDown className="w-3 h-3 text-[#9CA59E]" />
                   </div>
                 </th>
-                <th className="py-4 px-6">Category</th>
-                <th onClick={() => handleSort('email')} className="py-4 px-6 cursor-pointer hover:text-[#171A18] transition-colors">
-                  <div className="flex items-center space-x-1">
-                    <span>Email</span>
-                    <ArrowUpDown className="w-3 h-3 text-[#9CA59E]" />
-                  </div>
-                </th>
-                <th onClick={() => handleSort('address')} className="py-4 px-6 cursor-pointer hover:text-[#171A18] transition-colors">
-                  <div className="flex items-center space-x-1">
-                    <span>Address</span>
-                    <ArrowUpDown className="w-3 h-3 text-[#9CA59E]" />
-                  </div>
-                </th>
+                <th className="py-4 px-6">Category / City</th>
                 <th className="py-4 px-6">Owner</th>
+                <th className="py-4 px-6">Verification Status</th>
                 <th onClick={() => handleSort('rating')} className="py-4 px-6 cursor-pointer hover:text-[#171A18] transition-colors">
                   <div className="flex items-center space-x-1">
                     <span>Average Rating</span>
                     <ArrowUpDown className="w-3 h-3 text-[#9CA59E]" />
                   </div>
                 </th>
+                <th className="py-4 px-6 text-right">Admin Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E5DF] text-[#171A18]">
@@ -244,14 +252,22 @@ const StoreManagementPage = () => {
               ) : (
                 stores.map((s) => (
                   <tr key={s.id} className="hover:bg-[#F7F6F1] transition-colors">
-                    <td className="py-4 px-6 font-display font-bold text-[#171A18] text-sm">{s.name}</td>
-                    <td className="py-4 px-6">
-                      <span className="text-[10px] font-bold text-[#173D32] bg-[#E7F0EB] border border-[#CDE0D5] px-2.5 py-0.5 rounded-full">
-                        {s.category || 'General'}
-                      </span>
+                    <td className="py-4 px-6 font-display font-bold text-[#171A18] text-sm">
+                      <div>
+                        <span>{s.name}</span>
+                        <p className="text-[11px] text-[#707873] font-normal truncate max-w-[200px]">{s.address}</p>
+                      </div>
                     </td>
-                    <td className="py-4 px-6 font-mono text-[#707873]">{s.email}</td>
-                    <td className="py-4 px-6 text-[#707873] max-w-[200px] truncate">{s.address}</td>
+                    <td className="py-4 px-6">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-[#173D32] bg-[#E7F0EB] border border-[#CDE0D5] px-2.5 py-0.5 rounded-full inline-block">
+                          {s.category || 'General'}
+                        </span>
+                        {s.city && (
+                          <p className="text-[10px] text-[#707873] font-medium">📍 {s.city}</p>
+                        )}
+                      </div>
+                    </td>
                     <td className="py-4 px-6">
                       {s.owner ? (
                         <div>
@@ -263,11 +279,48 @@ const StoreManagementPage = () => {
                       )}
                     </td>
                     <td className="py-4 px-6">
+                      {s.isVerified === true ? (
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-100 border border-emerald-300 px-3 py-1 rounded-full inline-flex items-center space-x-1">
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>✓ Verified Business</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold text-[#707873] bg-[#F7F6F1] border border-[#E2E5DF] px-3 py-1 rounded-full inline-block">
+                          Not Verified
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-4 px-6">
                       <div className="inline-flex items-center space-x-1.5 bg-[#F5E6C8]/60 border border-[#E8D4A8] px-2.5 py-1 rounded-lg text-[#9A7525] font-extrabold">
                         <Star className="w-3.5 h-3.5 fill-[#C9A24A] text-[#C9A24A]" />
                         <span>{s.averageRating}</span>
                         <span className="text-[10px] text-[#707873] font-normal">({s.totalRatings})</span>
                       </div>
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      <button
+                        onClick={() => handleToggleVerification(s.id, s.isVerified)}
+                        disabled={actionStoreId === s.id}
+                        className={`px-3 py-1.5 text-xs font-extrabold rounded-xl border transition-all cursor-pointer inline-flex items-center space-x-1 ${
+                          s.isVerified
+                            ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200'
+                            : 'bg-[#173D32] hover:bg-[#2F6654] text-white border-transparent'
+                        }`}
+                      >
+                        {actionStoreId === s.id ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : s.isVerified ? (
+                          <>
+                            <ShieldOff className="w-3.5 h-3.5" />
+                            <span>Remove Verification</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShieldCheck className="w-3.5 h-3.5 text-[#C9A24A]" />
+                            <span>Verify Business</span>
+                          </>
+                        )}
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -375,17 +428,30 @@ const StoreManagementPage = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-[#707873] font-bold mb-1 uppercase tracking-wider text-[10px]">Store Address</label>
-                  <input
-                    type="text"
-                    name="address"
-                    required
-                    value={modalFormData.address}
-                    onChange={handleModalChange}
-                    placeholder="456 Commerce Boulevard, Suite 200"
-                    className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl py-2.5 px-3.5 text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32]"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[#707873] font-bold mb-1 uppercase tracking-wider text-[10px]">Store Address</label>
+                    <input
+                      type="text"
+                      name="address"
+                      required
+                      value={modalFormData.address}
+                      onChange={handleModalChange}
+                      placeholder="456 Commerce Boulevard"
+                      className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl py-2.5 px-3.5 text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[#707873] font-bold mb-1 uppercase tracking-wider text-[10px]">City (Optional)</label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={modalFormData.city}
+                      onChange={handleModalChange}
+                      placeholder="e.g. Mumbai, Pune, Kolhapur"
+                      className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl py-2.5 px-3.5 text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32]"
+                    />
+                  </div>
                 </div>
 
                 <div>
