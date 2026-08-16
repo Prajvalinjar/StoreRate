@@ -58,9 +58,24 @@ const getStoreById = async (req, res, next) => {
   }
 };
 
+const seedDemoStores = async (req, res, next) => {
+  try {
+    const { seed } = require('../scripts/seed');
+    const result = await seed();
+    return res.status(200).json({
+      status: 'success',
+      message: 'Production stores seeded successfully',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getStats,
   listStores,
   listTopRatedStores,
   getStoreById,
+  seedDemoStores,
 };

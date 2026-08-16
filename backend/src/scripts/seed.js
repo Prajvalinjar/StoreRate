@@ -1,54 +1,327 @@
 const prisma = require('../utils/prisma');
 const { hashPassword } = require('../utils/hashUtils');
 
+const DEMO_STORES = [
+  // General (3)
+  {
+    name: 'Demo StoreRate Market',
+    email: 'store@storerate.local',
+    address: 'Kolhapur, Maharashtra',
+    category: 'General',
+    imageUrl: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Panchganga Trade Center',
+    email: 'panchganga.trade@storerate-demo.in',
+    address: 'Shahupuri Commercial Hub, Kolhapur, Maharashtra',
+    category: 'General',
+    imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Central Business Hub',
+    email: 'central.hub@storerate-demo.in',
+    address: 'Shivajinagar Square, Pune, Maharashtra',
+    category: 'General',
+    imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Restaurant (5)
+  {
+    name: 'Rankala Family Restaurant',
+    email: 'rankala.restaurant@storerate-demo.in',
+    address: 'Rankala Lake Front, Kolhapur, Maharashtra',
+    category: 'Restaurant',
+    imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Kolhapur Spice Kitchen',
+    email: 'spice.kitchen@storerate-demo.in',
+    address: 'Tarabai Park, Kolhapur, Maharashtra',
+    category: 'Restaurant',
+    imageUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Deccan Food Plaza',
+    email: 'deccan.food@storerate-demo.in',
+    address: 'FC Road, Deccan Gymkhana, Pune, Maharashtra',
+    category: 'Restaurant',
+    imageUrl: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Sahyadri Thali House',
+    email: 'sahyadri.thali@storerate-demo.in',
+    address: 'Powai Naka, Satara, Maharashtra',
+    category: 'Restaurant',
+    imageUrl: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Konkan Kinara Seafood',
+    email: 'konkan.kinara@storerate-demo.in',
+    address: 'Bandra West, Mumbai, Maharashtra',
+    category: 'Restaurant',
+    imageUrl: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Grocery (3)
+  {
+    name: 'FreshMart Grocery Store',
+    email: 'freshmart@storerate.local',
+    address: 'Main Street Market, Kolhapur, Maharashtra',
+    category: 'Grocery',
+    imageUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Panchganga Grocery Hub',
+    email: 'panchganga.grocery@storerate-demo.in',
+    address: 'Rajarampuri Main Road, Kolhapur, Maharashtra',
+    category: 'Grocery',
+    imageUrl: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Mahalaxmi Supermarket',
+    email: 'mahalaxmi.super@storerate-demo.in',
+    address: 'Station Road, Sangli, Maharashtra',
+    category: 'Grocery',
+    imageUrl: 'https://images.unsplash.com/photo-1534723452862-4c874018d66d?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Electronics (3)
+  {
+    name: 'City Electronics Superstore',
+    email: 'cityelectronics@storerate.local',
+    address: 'Commercial Hub, Pune, Maharashtra',
+    category: 'Electronics',
+    imageUrl: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Mahalaxmi Electronics',
+    email: 'mahalaxmi.elec@storerate-demo.in',
+    address: 'Laxmi Road, Kolhapur, Maharashtra',
+    category: 'Electronics',
+    imageUrl: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Maharashtra Mobile World',
+    email: 'mobile.world@storerate-demo.in',
+    address: 'JM Road, Shivajinagar, Pune, Maharashtra',
+    category: 'Electronics',
+    imageUrl: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Fashion (3)
+  {
+    name: 'Sahyadri Fashion House',
+    email: 'sahyadri.fashion@storerate-demo.in',
+    address: 'Mahadwar Road, Kolhapur, Maharashtra',
+    category: 'Fashion',
+    imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Chhatrapati Silks & Ethnic',
+    email: 'chhatrapati.silks@storerate-demo.in',
+    address: 'Laxmi Road, Pune, Maharashtra',
+    category: 'Fashion',
+    imageUrl: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Pearl Couture Boutique',
+    email: 'pearl.couture@storerate-demo.in',
+    address: 'Bandra West, Mumbai, Maharashtra',
+    category: 'Fashion',
+    imageUrl: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Beauty (3)
+  {
+    name: 'Shivaji Nagar Beauty Studio',
+    email: 'shivaji.beauty@storerate-demo.in',
+    address: 'FC Road, Pune, Maharashtra',
+    category: 'Beauty',
+    imageUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Glow Salon & Spa',
+    email: 'glow.salon@storerate-demo.in',
+    address: 'Assembly Road, Kolhapur, Maharashtra',
+    category: 'Beauty',
+    imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Mahalaxmi Women Care & Salon',
+    email: 'mahalaxmi.women@storerate-demo.in',
+    address: 'Gaon Bhag, Sangli, Maharashtra',
+    category: 'Beauty',
+    imageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Healthcare (3)
+  {
+    name: 'Western Maharashtra Medical Store',
+    email: 'wm.medical@storerate-demo.in',
+    address: 'CPR Hospital Chowk, Kolhapur, Maharashtra',
+    category: 'Healthcare',
+    imageUrl: 'https://images.unsplash.com/photo-1586015555751-63bb77f4322a?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Apex Healthcare Pharmacy',
+    email: 'apex.pharma@storerate-demo.in',
+    address: 'Aundh Commercial Complex, Pune, Maharashtra',
+    category: 'Healthcare',
+    imageUrl: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Sahyadri Medical & Wellness',
+    email: 'sahyadri.medical@storerate-demo.in',
+    address: 'Powai Naka, Satara, Maharashtra',
+    category: 'Healthcare',
+    imageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Education (3)
+  {
+    name: 'Pune Career Academy',
+    email: 'pune.career@storerate-demo.in',
+    address: 'Sadashiv Peth, Pune, Maharashtra',
+    category: 'Education',
+    imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Sahyadri Coaching Institute',
+    email: 'sahyadri.coach@storerate-demo.in',
+    address: 'Bindu Chowk, Kolhapur, Maharashtra',
+    category: 'Education',
+    imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Nashik Science Classes',
+    email: 'nashik.science@storerate-demo.in',
+    address: 'College Road, Nashik, Maharashtra',
+    category: 'Education',
+    imageUrl: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Services (2)
+  {
+    name: 'Mahalaxmi Services Center',
+    email: 'mahalaxmi.services@storerate-demo.in',
+    address: 'Shahupuri, Kolhapur, Maharashtra',
+    category: 'Services',
+    imageUrl: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Deccan Utility Hub',
+    email: 'deccan.utility@storerate-demo.in',
+    address: 'Swargate, Pune, Maharashtra',
+    category: 'Services',
+    imageUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Automotive (3)
+  {
+    name: 'Kolhapur Auto Care',
+    email: 'kolhapur.auto@storerate-demo.in',
+    address: 'Shiroli MIDC, Kolhapur, Maharashtra',
+    category: 'Automotive',
+    imageUrl: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Sahyadri Motors & Service',
+    email: 'sahyadri.motors@storerate-demo.in',
+    address: 'Wakad, Pune, Maharashtra',
+    category: 'Automotive',
+    imageUrl: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Nagpur Wheel Care',
+    email: 'nagpur.wheel@storerate-demo.in',
+    address: 'Khamla Road, Nagpur, Maharashtra',
+    category: 'Automotive',
+    imageUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Home & Furniture (3)
+  {
+    name: 'Sahyadri Home Furnishings',
+    email: 'sahyadri.home@storerate-demo.in',
+    address: 'Hadapsar Industrial Zone, Pune, Maharashtra',
+    category: 'Home & Furniture',
+    imageUrl: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Mahalaxmi Furniture Studio',
+    email: 'mahalaxmi.furniture@storerate-demo.in',
+    address: 'Rajarampuri 5th Lane, Kolhapur, Maharashtra',
+    category: 'Home & Furniture',
+    imageUrl: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Deccan Decor & Interior',
+    email: 'deccan.decor@storerate-demo.in',
+    address: 'Jalna Road, Chhatrapati Sambhajinagar, Maharashtra',
+    category: 'Home & Furniture',
+    imageUrl: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+
+  // Other (2)
+  {
+    name: 'Western Maharashtra Art & Craft',
+    email: 'wm.crafts@storerate-demo.in',
+    address: 'Bhavani Mandap, Kolhapur, Maharashtra',
+    category: 'Other',
+    imageUrl: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+  {
+    name: 'Pune Book & Stationery World',
+    email: 'pune.books@storerate-demo.in',
+    address: 'Appa Balwant Chowk, Pune, Maharashtra',
+    category: 'Other',
+    imageUrl: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=800&q=80',
+    status: 'APPROVED',
+  },
+];
+
 async function seed() {
   console.log('================================================================');
-  console.log('       SEEDING STORE RATE PRODUCTION DEMO DATASET               ');
+  console.log('       SAFE IDEMPOTENT SEEDING OF STORERATE DATASET             ');
   console.log('================================================================\n');
 
   try {
-    // 1. CLEANUP AUTOMATED TEST / EXTRA NON-DEMO ENTRIES
-    const demoUserEmails = [
-      'admin@storerate.local',
-      'owner@storerate.local',
-      'owner2@storerate.local',
-      'owner3@storerate.local',
-      'user@storerate.local',
-      'user2@storerate.local',
-      'user3@storerate.local',
-      'user4@storerate.local',
-      'user5@storerate.local',
-    ];
-
-    const extraUsers = await prisma.user.findMany({
-      where: {
-        email: { notIn: demoUserEmails },
-      },
-    });
-
-    if (extraUsers.length > 0) {
-      const extraUserIds = extraUsers.map((u) => u.id);
-      await prisma.rating.deleteMany({ where: { userId: { in: extraUserIds } } });
-      const deletedUsers = await prisma.user.deleteMany({ where: { id: { in: extraUserIds } } });
-      console.log(`[CLEANUP] Removed ${deletedUsers.count} non-demo user records.`);
-    }
-
-    // Clean up extra stores not in the intended demo set
-    const demoStoreEmails = ['store@storerate.local', 'freshmart@storerate.local', 'cityelectronics@storerate.local'];
-    const extraStores = await prisma.store.findMany({
-      where: {
-        email: { notIn: demoStoreEmails },
-      },
-    });
-
-    if (extraStores.length > 0) {
-      const extraStoreIds = extraStores.map((s) => s.id);
-      await prisma.rating.deleteMany({ where: { storeId: { in: extraStoreIds } } });
-      const deletedStores = await prisma.store.deleteMany({ where: { id: { in: extraStoreIds } } });
-      console.log(`[CLEANUP] Removed ${deletedStores.count} non-demo store records.`);
-    }
-
-    // 2. CREATE / UPDATE DEMO ADMIN ACCOUNT
+    // 1. ENSURE DEMO ADMIN ACCOUNT
     const adminPw = await hashPassword('Admin@123');
     const admin = await prisma.user.upsert({
       where: { email: 'admin@storerate.local' },
@@ -68,240 +341,90 @@ async function seed() {
     });
     console.log(`[SEED] Admin Account: ${admin.email} (Role: ${admin.role})`);
 
-    // 3. CREATE / UPDATE STORE OWNER ACCOUNTS
+    // 2. ENSURE DEMO STORE OWNER ACCOUNT
     const ownerPw = await hashPassword('Owner@123');
-
-    const owner1 = await prisma.user.upsert({
+    const owner = await prisma.user.upsert({
       where: { email: 'owner@storerate.local' },
       update: {
         name: 'StoreRate Primary Store Owner',
         passwordHash: ownerPw,
         role: 'STORE_OWNER',
-        address: '200 Commercial Plaza, Kolhapur',
+        address: '200 Commercial Plaza, Kolhapur, Maharashtra',
       },
       create: {
         name: 'StoreRate Primary Store Owner',
         email: 'owner@storerate.local',
         passwordHash: ownerPw,
         role: 'STORE_OWNER',
-        address: '200 Commercial Plaza, Kolhapur',
+        address: '200 Commercial Plaza, Kolhapur, Maharashtra',
       },
     });
+    console.log(`[SEED] Store Owner Account: ${owner.email}`);
 
-    const owner2 = await prisma.user.upsert({
-      where: { email: 'owner2@storerate.local' },
-      update: {
-        name: 'FreshMart Store Manager Account',
-        passwordHash: ownerPw,
-        role: 'STORE_OWNER',
-        address: '15 Market Road, Kolhapur',
-      },
-      create: {
-        name: 'FreshMart Store Manager Account',
-        email: 'owner2@storerate.local',
-        passwordHash: ownerPw,
-        role: 'STORE_OWNER',
-        address: '15 Market Road, Kolhapur',
-      },
-    });
+    // 3. IDEMPOTENTLY UPSERT DEMO DISCOVERY STORES
+    let addedCount = 0;
+    let updatedCount = 0;
 
-    const owner3 = await prisma.user.upsert({
-      where: { email: 'owner3@storerate.local' },
-      update: {
-        name: 'City Electronics Store Owner',
-        passwordHash: ownerPw,
-        role: 'STORE_OWNER',
-        address: '88 Commercial Tech Park, Pune',
-      },
-      create: {
-        name: 'City Electronics Store Owner',
-        email: 'owner3@storerate.local',
-        passwordHash: ownerPw,
-        role: 'STORE_OWNER',
-        address: '88 Commercial Tech Park, Pune',
-      },
-    });
-    console.log(`[SEED] Created/verified 3 Store Owner accounts (${owner1.email}, ${owner2.email}, ${owner3.email})`);
-
-    // 4. CREATE / UPDATE NORMAL USER DEMO ACCOUNTS
-    const userPw = await hashPassword('User@123');
-
-    const user1 = await prisma.user.upsert({
-      where: { email: 'user@storerate.local' },
-      update: {
-        name: 'StoreRate Demo Normal User',
-        passwordHash: userPw,
-        role: 'USER',
-        address: '300 Consumer Street, Kolhapur',
-      },
-      create: {
-        name: 'StoreRate Demo Normal User',
-        email: 'user@storerate.local',
-        passwordHash: userPw,
-        role: 'USER',
-        address: '300 Consumer Street, Kolhapur',
-      },
-    });
-
-    const user2 = await prisma.user.upsert({
-      where: { email: 'user2@storerate.local' },
-      update: {
-        name: 'StoreRate Second Consumer User',
-        passwordHash: userPw,
-        role: 'USER',
-        address: '301 Consumer Avenue, Kolhapur',
-      },
-      create: {
-        name: 'StoreRate Second Consumer User',
-        email: 'user2@storerate.local',
-        passwordHash: userPw,
-        role: 'USER',
-        address: '301 Consumer Avenue, Kolhapur',
-      },
-    });
-
-    const user3 = await prisma.user.upsert({
-      where: { email: 'user3@storerate.local' },
-      update: {
-        name: 'StoreRate Third Consumer User',
-        passwordHash: userPw,
-        role: 'USER',
-        address: '302 Consumer Road, Kolhapur',
-      },
-      create: {
-        name: 'StoreRate Third Consumer User',
-        email: 'user3@storerate.local',
-        passwordHash: userPw,
-        role: 'USER',
-        address: '302 Consumer Road, Kolhapur',
-      },
-    });
-
-    const user4 = await prisma.user.upsert({
-      where: { email: 'user4@storerate.local' },
-      update: {
-        name: 'StoreRate Fourth Consumer User',
-        passwordHash: userPw,
-        role: 'USER',
-        address: '303 Consumer Boulevard, Kolhapur',
-      },
-      create: {
-        name: 'StoreRate Fourth Consumer User',
-        email: 'user4@storerate.local',
-        passwordHash: userPw,
-        role: 'USER',
-        address: '303 Consumer Boulevard, Kolhapur',
-      },
-    });
-
-    const user5 = await prisma.user.upsert({
-      where: { email: 'user5@storerate.local' },
-      update: {
-        name: 'StoreRate Fifth Consumer User',
-        passwordHash: userPw,
-        role: 'USER',
-        address: '304 Consumer Way, Kolhapur',
-      },
-      create: {
-        name: 'StoreRate Fifth Consumer User',
-        email: 'user5@storerate.local',
-        passwordHash: userPw,
-        role: 'USER',
-        address: '304 Consumer Way, Kolhapur',
-      },
-    });
-    console.log(`[SEED] Created/verified 5 Normal User accounts (${user1.email}, ${user2.email}, ${user3.email}, ${user4.email}, ${user5.email})`);
-
-    // 5. CREATE / UPDATE DEMO STORES
-    const store1Data = {
-      name: 'Demo StoreRate Market',
-      email: 'store@storerate.local',
-      address: 'Kolhapur, Maharashtra',
-      ownerId: owner1.id,
-    };
-    const store2Data = {
-      name: 'FreshMart Grocery Store',
-      email: 'freshmart@storerate.local',
-      address: 'Main Street Market, Kolhapur',
-      ownerId: owner2.id,
-    };
-    const store3Data = {
-      name: 'City Electronics Superstore',
-      email: 'cityelectronics@storerate.local',
-      address: 'Commercial Hub, Pune',
-      ownerId: owner3.id,
-    };
-
-    let store1 = await prisma.store.findFirst({ where: { ownerId: owner1.id } });
-    if (!store1) store1 = await prisma.store.create({ data: store1Data });
-    else store1 = await prisma.store.update({ where: { id: store1.id }, data: store1Data });
-
-    let store2 = await prisma.store.findFirst({ where: { ownerId: owner2.id } });
-    if (!store2) store2 = await prisma.store.create({ data: store2Data });
-    else store2 = await prisma.store.update({ where: { id: store2.id }, data: store2Data });
-
-    let store3 = await prisma.store.findFirst({ where: { ownerId: owner3.id } });
-    if (!store3) store3 = await prisma.store.create({ data: store3Data });
-    else store3 = await prisma.store.update({ where: { id: store3.id }, data: store3Data });
-
-    console.log(`[SEED] Created/verified 3 Demo Stores ("${store1.name}", "${store2.name}", "${store3.name}")`);
-
-    // 6. PURGE EXTRA RATINGS THAT ARE NOT IN THE DEMO SEED SET
-    const validStoreIds = [store1.id, store2.id, store3.id];
-    const validUserIds = [user1.id, user2.id, user3.id];
-
-    await prisma.rating.deleteMany({
-      where: {
-        OR: [
-          { storeId: { notIn: validStoreIds } },
-          { userId: { notIn: validUserIds } },
-        ],
-      },
-    });
-
-    // 7. CREATE / UPDATE DEMO RATINGS (6 TOTAL)
-    const ratingsToSeed = [
-      // Store 1 Ratings (5, 4, 5 -> Avg 4.7)
-      { userId: user1.id, storeId: store1.id, rating: 5 },
-      { userId: user2.id, storeId: store1.id, rating: 4 },
-      { userId: user3.id, storeId: store1.id, rating: 5 },
-
-      // Store 2 Ratings (4, 4 -> Avg 4.0)
-      { userId: user1.id, storeId: store2.id, rating: 4 },
-      { userId: user2.id, storeId: store2.id, rating: 4 },
-
-      // Store 3 Rating (5 -> Avg 5.0)
-      { userId: user3.id, storeId: store3.id, rating: 5 },
-    ];
-
-    for (const r of ratingsToSeed) {
-      await prisma.rating.upsert({
-        where: {
-          userId_storeId: {
-            userId: r.userId,
-            storeId: r.storeId,
-          },
-        },
-        update: { rating: r.rating },
-        create: {
-          userId: r.userId,
-          storeId: r.storeId,
-          rating: r.rating,
-        },
+    for (const storeData of DEMO_STORES) {
+      const existing = await prisma.store.findFirst({
+        where: { email: storeData.email.toLowerCase() },
       });
-    }
-    console.log(`[SEED] Created/updated ${ratingsToSeed.length} customer ratings across the 3 demo stores`);
 
-    console.log('\n================================================================');
-    console.log('         DEMO DATASET SEED COMPLETED SUCCESSFULLY               ');
-    console.log('================================================================\n');
+      if (!existing) {
+        await prisma.store.create({
+          data: {
+            name: storeData.name,
+            email: storeData.email.toLowerCase(),
+            address: storeData.address,
+            category: storeData.category,
+            imageUrl: storeData.imageUrl,
+            status: storeData.status,
+            ownerId: owner.id,
+          },
+        });
+        addedCount++;
+      } else {
+        await prisma.store.update({
+          where: { id: existing.id },
+          data: {
+            name: storeData.name,
+            address: storeData.address,
+            category: storeData.category,
+            imageUrl: storeData.imageUrl,
+            status: storeData.status,
+          },
+        });
+        updatedCount++;
+      }
+    }
+
+    console.log(`[SEED] Stores processing complete: ${addedCount} newly created, ${updatedCount} existing updated.`);
+
+    return {
+      success: true,
+      addedCount,
+      updatedCount,
+      totalUsers,
+      totalStores,
+      approvedStores,
+      pendingStores,
+      rejectedStores,
+      totalRatings,
+    };
   } catch (error) {
     console.error('Seed script error:', error);
-    process.exit(1);
-  } finally {
-    await prisma.$disconnect();
+    throw error;
   }
 }
 
-seed();
+if (require.main === module) {
+  seed()
+    .then(() => prisma.$disconnect())
+    .catch(async (e) => {
+      console.error(e);
+      await prisma.$disconnect();
+      process.exit(1);
+    });
+}
 
+module.exports = { seed, DEMO_STORES };
