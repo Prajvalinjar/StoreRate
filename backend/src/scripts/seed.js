@@ -400,6 +400,15 @@ async function seed() {
 
     console.log(`[SEED] Stores processing complete: ${addedCount} newly created, ${updatedCount} existing updated.`);
 
+    const totalUsers = await prisma.user.count();
+    const totalStores = await prisma.store.count();
+    const approvedStores = await prisma.store.count({ where: { status: 'APPROVED' } });
+    const pendingStores = await prisma.store.count({ where: { status: 'PENDING' } });
+    const rejectedStores = await prisma.store.count({ where: { status: 'REJECTED' } });
+    const totalRatings = await prisma.rating.count();
+
+    console.log(`[SEED] Dataset Summary: ${totalUsers} Users, ${totalStores} Stores (${approvedStores} Approved, ${pendingStores} Pending, ${rejectedStores} Rejected), ${totalRatings} Ratings.`);
+
     return {
       success: true,
       addedCount,
