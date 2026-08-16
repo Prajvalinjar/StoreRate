@@ -33,12 +33,9 @@ const SmartDashboardRedirect = () => {
 };
 
 const AppLayout = () => {
-  const location = useLocation();
-  const isLandingPage = location.pathname === '/';
-
   return (
     <div className="min-h-screen font-sans bg-[#F7F6F1] text-[#171A18] selection:bg-[#173D32] selection:text-white">
-      {!isLandingPage && <Navbar />}
+      <Navbar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/stores" element={<ExploreStoresPage />} />

@@ -112,17 +112,42 @@ const OwnerDashboardPage = () => {
   if (!storeData) {
     return (
       <div className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 text-left">
+        {/* Header Hero */}
         <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
           <div className="space-y-2 border-b border-[#E2E5DF] pb-5">
             <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block border border-[#CDE0D5]">
-              STORE REGISTRATION WORKFLOW
+              STORE OWNER ONBOARDING
             </span>
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#171A18] tracking-tight">
-              Submit Your Store Listing
+              Your store isn't listed yet.
             </h2>
             <p className="text-xs sm:text-sm text-[#707873]">
-              Register your business details below. Store listings undergo administrator review before becoming publicly visible on StoreRate.
+              Submit your business to StoreRate and start building your reputation with customer ratings.
             </p>
+          </div>
+
+          {/* Visual Workflow Diagram */}
+          <div className="bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl p-4 space-y-3">
+            <p className="text-[10px] font-extrabold text-[#707873] uppercase tracking-wider">
+              Store Owner Listing & Approval Process
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-center text-[11px] font-bold">
+              <div className="bg-white border border-[#E2E5DF] p-2.5 rounded-lg text-[#173D32]">
+                1. Store Submission
+              </div>
+              <div className="bg-white border border-[#E2E5DF] p-2.5 rounded-lg text-[#173D32]">
+                2. Admin Review
+              </div>
+              <div className="bg-white border border-[#E2E5DF] p-2.5 rounded-lg text-[#173D32]">
+                3. Approval
+              </div>
+              <div className="bg-white border border-[#E2E5DF] p-2.5 rounded-lg text-[#173D32]">
+                4. Public Listing
+              </div>
+              <div className="bg-white border border-[#E2E5DF] p-2.5 rounded-lg text-[#173D32]">
+                5. Customer Ratings
+              </div>
+            </div>
           </div>
 
           {formError && (
@@ -148,7 +173,7 @@ const OwnerDashboardPage = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Apex Electronics & Appliances"
+                placeholder="e.g. Kolhapur Spice Kitchen"
                 className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32] focus:ring-1 focus:ring-[#173D32]/20"
                 required
               />
@@ -162,7 +187,7 @@ const OwnerDashboardPage = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="contact@apexelectronics.com"
+                placeholder="contact@business.com"
                 className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32] focus:ring-1 focus:ring-[#173D32]/20"
                 required
               />
@@ -176,7 +201,7 @@ const OwnerDashboardPage = () => {
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Commercial Street, Pune, Maharashtra"
+                placeholder="Tarabai Park, Kolhapur, Maharashtra"
                 className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32] focus:ring-1 focus:ring-[#173D32]/20"
                 required
               />
@@ -214,7 +239,7 @@ const OwnerDashboardPage = () => {
                 className="w-full py-3 bg-[#173D32] hover:bg-[#2F6654] text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-2 disabled:opacity-40 cursor-pointer"
               >
                 <Send className="w-4 h-4" />
-                <span>{submitting ? 'Submitting...' : 'Submit Store for Approval'}</span>
+                <span>{submitting ? 'Submitting...' : 'Submit Store Listing →'}</span>
               </button>
             </div>
           </form>

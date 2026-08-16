@@ -40,8 +40,7 @@ const LandingPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#F7F7F2] font-sans text-stone-900 selection:bg-emerald-500 selection:text-white">
-      <LandingNavbar />
+    <div className="min-h-screen bg-[#F7F6F1] text-[#171A18] selection:bg-[#173D32] selection:text-white">
       <main>
         <HeroSection stats={stats} loading={loading} />
         <TrustMetrics stats={stats} loading={loading} />

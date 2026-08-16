@@ -155,13 +155,13 @@ const ExploreStoresPage = () => {
         <div className="border-b border-[#E2E5DF] pb-6">
           <div className="space-y-2">
             <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block border border-[#CDE0D5]">
-              INTELLIGENT STORE DISCOVERY
+              CONSUMER DISCOVERY PORTAL
             </span>
             <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#171A18] tracking-tight">
-              Explore Stores
+              Find a store worth rating.
             </h1>
             <p className="text-xs sm:text-sm text-[#707873] max-w-2xl font-normal">
-              Discover verified businesses, filter by category & rating score, and explore community recommendations.
+              Explore local businesses, see what others think, and share your experience.
             </p>
           </div>
         </div>
