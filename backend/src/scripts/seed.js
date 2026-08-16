@@ -1,6 +1,25 @@
 const prisma = require('../utils/prisma');
 const { hashPassword } = require('../utils/hashUtils');
 
+const DEMO_USER_NAMES = [
+  'Aarav Patil', 'Aditya Jadhav', 'Rohan Shinde', 'Siddhant Kulkarni',
+  'Akshay Deshmukh', 'Omkar Pawar', 'Prathamesh Kadam', 'Soham Chavan',
+  'Atharva Patil', 'Yash More', 'Saurabh Joshi', 'Rahul Bhosale',
+  'Tejas Mane', 'Kunal Salunkhe', 'Abhishek Sawant', 'Nikhil Patil',
+  'Sneha Deshmukh', 'Priya Jadhav', 'Ananya Kulkarni', 'Sayali Patil',
+  'Pooja Shinde', 'Rutuja Pawar', 'Neha Kadam', 'Aditi Chavan',
+  'Shruti More', 'Vaishnavi Bhosale', 'Sakshi Mane', 'Mrunal Salunkhe',
+  'Isha Sawant', 'Tanvi Patil'
+];
+
+const DEMO_LOCATIONS = [
+  'Kothrud, Pune, Maharashtra', 'Tarabai Park, Kolhapur, Maharashtra',
+  'Bandra West, Mumbai, Maharashtra', 'Rajarampuri, Kolhapur, Maharashtra',
+  'Deccan Gymkhana, Pune, Maharashtra', 'Powai Naka, Satara, Maharashtra',
+  'Gaon Bhag, Sangli, Maharashtra', 'College Road, Nashik, Maharashtra',
+  'Khamla Road, Nagpur, Maharashtra', 'Jalna Road, Sambhajinagar, Maharashtra'
+];
+
 const DEMO_STORES = [
   // General (3)
   {
@@ -315,6 +334,16 @@ const DEMO_STORES = [
   },
 ];
 
+// Deterministic hash helper for reproducible sample ratings
+function simpleHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
 async function seed() {
   console.log('================================================================');
   console.log('       SAFE IDEMPOTENT SEEDING OF STORERATE DATASET             ');
@@ -361,9 +390,38 @@ async function seed() {
     });
     console.log(`[SEED] Store Owner Account: ${owner.email}`);
 
-    // 3. IDEMPOTENTLY UPSERT DEMO DISCOVERY STORES
-    let addedCount = 0;
-    let updatedCount = 0;
+    // 3. ENSURE IDEMPOTENT DEMO USERS POOL (30 Maharashtrian Names)
+    const userPw = await hashPassword('User@123');
+    const seededDemoUsers = [];
+
+    for (let i = 0; i < DEMO_USER_NAMES.length; i++) {
+      const name = DEMO_USER_NAMES[i];
+      const emailSlug = name.toLowerCase().replace(/\s+/g, '.');
+      const email = `${emailSlug}.demo@storerate.local`;
+      const location = DEMO_LOCATIONS[i % DEMO_LOCATIONS.length];
+
+      const u = await prisma.user.upsert({
+        where: { email },
+        update: {
+          name,
+          role: 'USER',
+          address: location,
+        },
+        create: {
+          name,
+          email,
+          passwordHash: userPw,
+          role: 'USER',
+          address: location,
+        },
+      });
+      seededDemoUsers.push(u);
+    }
+    console.log(`[SEED] Idempotent Demo Users Pool: ${seededDemoUsers.length} accounts verified.`);
+
+    // 4. IDEMPOTENTLY UPSERT DEMO DISCOVERY STORES
+    let addedStoreCount = 0;
+    let updatedStoreCount = 0;
 
     for (const storeData of DEMO_STORES) {
       const existing = await prisma.store.findFirst({
@@ -382,7 +440,7 @@ async function seed() {
             ownerId: owner.id,
           },
         });
-        addedCount++;
+        addedStoreCount++;
       } else {
         await prisma.store.update({
           where: { id: existing.id },
@@ -394,11 +452,78 @@ async function seed() {
             status: storeData.status,
           },
         });
-        updatedCount++;
+        updatedStoreCount++;
+      }
+    }
+    console.log(`[SEED] Stores processing complete: ${addedStoreCount} newly created, ${updatedStoreCount} existing updated.`);
+
+    // 5. DETERMINISTIC SAMPLE RATINGS SEEDING
+    const allApprovedStores = await prisma.store.findMany({
+      where: { status: 'APPROVED' },
+    });
+
+    let newRatingsAdded = 0;
+    let existingRatingsPreserved = 0;
+
+    // Rating distribution percentages: 5★ (~35%), 4★ (~35%), 3★ (~18%), 2★ (~8%), 1★ (~4%)
+    const RATING_SCORES = [5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 1];
+
+    for (let sIdx = 0; sIdx < allApprovedStores.length; sIdx++) {
+      const store = allApprovedStores[sIdx];
+      const hash = simpleHash(store.id);
+
+      // Determine target number of ratings based on category/popularity
+      let targetCount = 0;
+      if (['Restaurant', 'General'].includes(store.category)) {
+        targetCount = 8 + (hash % 8); // 8–15 ratings
+      } else if (['Grocery', 'Electronics', 'Fashion'].includes(store.category)) {
+        targetCount = 4 + (hash % 7); // 4–10 ratings
+      } else if (['Beauty', 'Healthcare', 'Education'].includes(store.category)) {
+        targetCount = 2 + (hash % 5); // 2–6 ratings
+      } else {
+        targetCount = hash % 4; // 0–3 ratings
+      }
+
+      // Pick deterministic subset of demo users for this store
+      for (let uIdx = 0; uIdx < targetCount && uIdx < seededDemoUsers.length; uIdx++) {
+        const userOffset = (hash + uIdx * 7) % seededDemoUsers.length;
+        const demoUser = seededDemoUsers[userOffset];
+
+        // Check if rating already exists (preserves user-created production ratings)
+        const existingRating = await prisma.rating.findUnique({
+          where: {
+            userId_storeId: {
+              userId: demoUser.id,
+              storeId: store.id,
+            },
+          },
+        });
+
+        if (existingRating) {
+          existingRatingsPreserved++;
+          continue;
+        }
+
+        // Deterministic score and timestamp offset (between 7 and 180 days ago)
+        const scoreIndex = (hash + uIdx * 3) % RATING_SCORES.length;
+        const score = RATING_SCORES[scoreIndex];
+        const daysAgo = 7 + ((hash + uIdx * 13) % 173);
+        const createdAtDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+
+        await prisma.rating.create({
+          data: {
+            userId: demoUser.id,
+            storeId: store.id,
+            rating: score,
+            createdAt: createdAtDate,
+            updatedAt: createdAtDate,
+          },
+        });
+        newRatingsAdded++;
       }
     }
 
-    console.log(`[SEED] Stores processing complete: ${addedCount} newly created, ${updatedCount} existing updated.`);
+    console.log(`[SEED] Sample Ratings Seeding: ${newRatingsAdded} newly created, ${existingRatingsPreserved} existing preserved.`);
 
     const totalUsers = await prisma.user.count();
     const totalStores = await prisma.store.count();
@@ -407,12 +532,14 @@ async function seed() {
     const rejectedStores = await prisma.store.count({ where: { status: 'REJECTED' } });
     const totalRatings = await prisma.rating.count();
 
-    console.log(`[SEED] Dataset Summary: ${totalUsers} Users, ${totalStores} Stores (${approvedStores} Approved, ${pendingStores} Pending, ${rejectedStores} Rejected), ${totalRatings} Ratings.`);
+    console.log(`[SEED] Dataset Summary: ${totalUsers} Users, ${totalStores} Stores (${approvedStores} Approved, ${pendingStores} Pending, ${rejectedStores} Rejected), ${totalRatings} Total Ratings.`);
 
     return {
       success: true,
-      addedCount,
-      updatedCount,
+      addedStoreCount,
+      updatedStoreCount,
+      newRatingsAdded,
+      existingRatingsPreserved,
       totalUsers,
       totalStores,
       approvedStores,
@@ -436,4 +563,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { seed, DEMO_STORES };
+module.exports = { seed, DEMO_STORES, DEMO_USER_NAMES };
