@@ -6,6 +6,7 @@ import AppShell from './components/AppShell';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleRoute from './components/RoleRoute';
 import AdminLayout from './components/AdminLayout';
+import ErrorBoundary from './components/ErrorBoundary';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -149,11 +150,13 @@ const AppLayout = () => {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppLayout />
-      </AuthProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppLayout />
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
