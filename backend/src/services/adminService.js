@@ -15,7 +15,7 @@ const sanitizeUser = (user) => {
 };
 
 const getDashboardMetrics = async () => {
-  const [totalUsers, totalStores, totalRatings, pendingStoresCount, userRoles, storePerformance] = await Promise.all([
+  const [totalUsers, totalStores, totalRatings, pendingStoresCount, userRoles, storePerformance, pendingReportsCount] = await Promise.all([
     prisma.user.count(),
     prisma.store.count({ where: { status: 'APPROVED' } }),
     prisma.rating.count(),
@@ -36,6 +36,7 @@ const getDashboardMetrics = async () => {
         },
       },
     }),
+    prisma.reviewReport.count({ where: { status: 'PENDING' } }),
   ]);
 
   const roleDistribution = { USER: 0, STORE_OWNER: 0, ADMIN: 0 };
@@ -63,6 +64,7 @@ const getDashboardMetrics = async () => {
     totalStores,
     totalRatings,
     pendingStoresCount,
+    pendingReportsCount,
     roleDistribution,
     storePerformance: storesWithPerformance,
   };
@@ -398,6 +400,99 @@ const createStore = async ({ name, email, address, ownerId }) => {
   };
 };
 
+const getReviewReports = async () => {
+  const reports = await prisma.reviewReport.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: {
+      rating: {
+        include: {
+          store: { select: { id: true, name: true } },
+          user: { select: { id: true, name: true, email: true } },
+        },
+      },
+      reporter: { select: { id: true, name: true, email: true } },
+      resolvedBy: { select: { id: true, name: true } },
+    },
+  });
+
+  return { reports };
+};
+
+const dismissReport = async (reportId, adminId) => {
+  const report = await prisma.reviewReport.findUnique({
+    where: { id: reportId },
+  });
+
+  if (!report) {
+    throw new AdminError('Report not found', 404);
+  }
+
+  const updatedReport = await prisma.reviewReport.update({
+    where: { id: reportId },
+    data: {
+      status: 'DISMISSED',
+      resolvedAt: new Date(),
+      resolvedById: adminId,
+    },
+  });
+
+  return updatedReport;
+};
+
+const hideReview = async (reportId, adminId) => {
+  const report = await prisma.reviewReport.findUnique({
+    where: { id: reportId },
+    include: { rating: true },
+  });
+
+  if (!report) {
+    throw new AdminError('Report not found', 404);
+  }
+
+  await prisma.rating.update({
+    where: { id: report.ratingId },
+    data: { reviewStatus: 'HIDDEN' },
+  });
+
+  const updatedReport = await prisma.reviewReport.update({
+    where: { id: reportId },
+    data: {
+      status: 'RESOLVED',
+      resolvedAt: new Date(),
+      resolvedById: adminId,
+    },
+  });
+
+  return updatedReport;
+};
+
+const restoreReview = async (reportId, adminId) => {
+  const report = await prisma.reviewReport.findUnique({
+    where: { id: reportId },
+    include: { rating: true },
+  });
+
+  if (!report) {
+    throw new AdminError('Report not found', 404);
+  }
+
+  await prisma.rating.update({
+    where: { id: report.ratingId },
+    data: { reviewStatus: 'VISIBLE' },
+  });
+
+  const updatedReport = await prisma.reviewReport.update({
+    where: { id: reportId },
+    data: {
+      status: 'RESOLVED',
+      resolvedAt: new Date(),
+      resolvedById: adminId,
+    },
+  });
+
+  return updatedReport;
+};
+
 module.exports = {
   AdminError,
   getDashboardMetrics,
@@ -410,4 +505,8 @@ module.exports = {
   getPendingStores,
   approveStore,
   rejectStore,
+  getReviewReports,
+  dismissReport,
+  hideReview,
+  restoreReview,
 };

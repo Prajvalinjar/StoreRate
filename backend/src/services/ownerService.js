@@ -24,6 +24,8 @@ const getOwnerDashboard = async (ownerId) => {
           id: true,
           rating: true,
           review: true,
+          ownerReply: true,
+          ownerReplyAt: true,
           createdAt: true,
           user: {
             select: {
@@ -55,6 +57,8 @@ const getOwnerDashboard = async (ownerId) => {
         userEmail: r.user.email,
         rating: r.rating,
         review: r.review,
+        ownerReply: r.ownerReply,
+        ownerReplyAt: r.ownerReplyAt,
         createdAt: r.createdAt,
       }))
     : [];
@@ -101,8 +105,67 @@ const createOwnerStore = async (ownerId, { name, email, address, category }) => 
   return newStore;
 };
 
+const replyToRating = async (ownerId, ratingId, replyText) => {
+  if (!replyText || !replyText.trim()) {
+    throw new OwnerError('Reply text cannot be empty', 400);
+  }
+  if (replyText.length > 500) {
+    throw new OwnerError('Reply text cannot exceed 500 characters', 400);
+  }
+
+  const rating = await prisma.rating.findUnique({
+    where: { id: ratingId },
+    include: { store: true },
+  });
+
+  if (!rating) {
+    throw new OwnerError('Rating not found', 404);
+  }
+
+  if (rating.store.ownerId !== ownerId) {
+    throw new OwnerError('Forbidden: You can only reply to customer reviews left on your store', 403);
+  }
+
+  const updatedRating = await prisma.rating.update({
+    where: { id: ratingId },
+    data: {
+      ownerReply: replyText.trim(),
+      ownerReplyAt: new Date(),
+    },
+  });
+
+  return updatedRating;
+};
+
+const deleteReplyFromRating = async (ownerId, ratingId) => {
+  const rating = await prisma.rating.findUnique({
+    where: { id: ratingId },
+    include: { store: true },
+  });
+
+  if (!rating) {
+    throw new OwnerError('Rating not found', 404);
+  }
+
+  if (rating.store.ownerId !== ownerId) {
+    throw new OwnerError('Forbidden: You can only manage replies on your own store', 403);
+  }
+
+  const updatedRating = await prisma.rating.update({
+    where: { id: ratingId },
+    data: {
+      ownerReply: null,
+      ownerReplyAt: null,
+    },
+  });
+
+  return updatedRating;
+};
+
 module.exports = {
   OwnerError,
   getOwnerDashboard,
   createOwnerStore,
+  replyToRating,
+  deleteReplyFromRating,
 };

@@ -5,6 +5,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const userStoreRoutes = require('./routes/userStoreRoutes');
 const ownerRoutes = require('./routes/ownerRoutes');
 const publicRoutes = require('./routes/publicRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
 
 const app = express();
 
@@ -32,6 +33,9 @@ app.use('/api/admin', adminRoutes);
 
 // Normal User Store & Rating routes
 app.use('/api/stores', userStoreRoutes);
+
+// Review Reporting routes
+app.use('/api/reviews', reviewRoutes);
 
 // Store Owner routes
 app.use('/api/owner', ownerRoutes);

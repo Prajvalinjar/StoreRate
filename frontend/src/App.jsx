@@ -32,6 +32,7 @@ import UserManagementPage from './pages/UserManagementPage';
 import UserDetailsPage from './pages/UserDetailsPage';
 import StoreManagementPage from './pages/StoreManagementPage';
 import AdminProfilePage from './pages/AdminProfilePage';
+import AdminReviewReportsPage from './pages/AdminReviewReportsPage';
 
 import ExploreStoresPage from './pages/ExploreStoresPage';
 import StoreProfilePage from './pages/StoreProfilePage';
@@ -181,6 +182,7 @@ const AppLayout = () => {
         }
       >
         <Route index element={<AdminDashboardPage />} />
+        <Route path="reports" element={<AdminReviewReportsPage />} />
         <Route path="users" element={<UserManagementPage />} />
         <Route path="users/:id" element={<UserDetailsPage />} />
         <Route path="stores" element={<StoreManagementPage />} />

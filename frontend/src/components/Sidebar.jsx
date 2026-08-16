@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   Store, Star, Compass, User as UserIcon, Shield, LayoutDashboard, 
-  TrendingUp, CircleHelp, LogOut, ExternalLink, Users, Clock, ChevronRight, Heart
+  TrendingUp, CircleHelp, LogOut, ExternalLink, Users, Clock, ChevronRight, Heart, Flag
 } from 'lucide-react';
 
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
@@ -48,6 +48,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     if (user.role === 'ADMIN') {
       if (key === 'overview') return path === '/admin' && !search.includes('pending');
       if (key === 'approvals') return path === '/admin' && search.includes('pending');
+      if (key === 'reports') return path.startsWith('/admin/reports');
       if (key === 'stores') return path.startsWith('/admin/stores');
       if (key === 'users') return path.startsWith('/admin/users');
       if (key === 'profile') return path === '/admin/profile';
@@ -78,6 +79,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         return [
           { key: 'overview', label: 'Overview', path: '/admin', icon: LayoutDashboard },
           { key: 'approvals', label: 'Store Approvals', path: '/admin?tab=pending', icon: Clock },
+          { key: 'reports', label: 'Review Reports', path: '/admin/reports', icon: Flag },
           { key: 'stores', label: 'Stores', path: '/admin/stores', icon: Store },
           { key: 'users', label: 'Users', path: '/admin/users', icon: Users },
           { key: 'profile', label: 'My Profile', path: '/admin/profile', icon: UserIcon },
@@ -153,7 +155,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         </div>
       </div>
 
-      {/* Footer Controls Anchored at Bottom */}
+      {/* Footer Controls */}
       <div className="space-y-2 pt-4 border-t border-[#123027] text-left">
         <Link
           to="/how-it-works"
@@ -178,12 +180,10 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   return (
     <>
-      {/* Desktop Fixed 100vh Sidebar */}
       <aside className="hidden lg:block h-screen sticky top-0 z-40">
         {sidebarContent}
       </aside>
 
-      {/* Mobile Slide-Out Drawer Sidebar */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div

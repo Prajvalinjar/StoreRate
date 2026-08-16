@@ -2,14 +2,23 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getPublicStoreById } from '../api/publicService';
-import { submitRating, updateRating, addFavorite, removeFavorite, getUserFavoriteStoreIds } from '../api/userStoreService';
+import { submitRating, updateRating, addFavorite, removeFavorite, getUserFavoriteStoreIds, reportReview } from '../api/userStoreService';
 import StarRating from '../components/StarRating';
 import SafeImage from '../components/SafeImage';
 import SkeletonLoader from '../components/SkeletonLoader';
 import { 
   Star, MapPin, ArrowLeft, CheckCircle2, ShieldAlert, Award, 
-  LogIn, UserCheck, Sparkles, RefreshCw, AlertCircle, Calendar, Heart, MessageSquare, SlidersHorizontal, ChevronDown 
+  LogIn, UserCheck, Sparkles, RefreshCw, AlertCircle, Calendar, Heart, MessageSquare, SlidersHorizontal, ChevronDown, Flag, CornerDownRight, Check
 } from 'lucide-react';
+
+const REPORT_REASONS = [
+  { value: 'SPAM', label: 'Spam or promotional content' },
+  { value: 'OFFENSIVE', label: 'Offensive language or hate speech' },
+  { value: 'HARASSMENT', label: 'Harassment or personal attack' },
+  { value: 'MISLEADING', label: 'Fake, dishonest or misleading' },
+  { value: 'INAPPROPRIATE', label: 'Inappropriate content' },
+  { value: 'OTHER', label: 'Other concern' },
+];
 
 const StoreProfilePage = () => {
   const { id } = useParams();
@@ -34,13 +43,23 @@ const StoreProfilePage = () => {
   const [modalError, setModalError] = useState('');
   const [modalSuccess, setModalSuccess] = useState('');
 
+  // Report Modal state
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [targetRatingObj, setTargetRatingObj] = useState(null);
+  const [reportReason, setReportReason] = useState('SPAM');
+  const [reportDescription, setReportDescription] = useState('');
+  const [reporting, setReporting] = useState(false);
+  const [reportError, setReportError] = useState('');
+  const [reportSuccess, setReportSuccess] = useState('');
+  const [reportedRatingIds, setReportedRatingIds] = useState([]);
+
   // Review Sorting & Pagination state
-  const [reviewSort, setReviewSort] = useState('recent'); // recent, highest, lowest
+  const [reviewSort, setReviewSort] = useState('recent');
   const [visibleReviewCount, setVisibleReviewCount] = useState(10);
 
   // Sign In Prompt Modal state
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
-  const [promptMessage, setPromptMessage] = useState('Sign in to submit a rating');
+  const [promptMessage, setPromptMessage] = useState('Sign in to rate this store');
 
   const fetchStoreDetail = async () => {
     setLoading(true);
@@ -52,7 +71,6 @@ const StoreProfilePage = () => {
         setStore(storeData);
 
         if (isAuthenticated && user?.role === 'USER') {
-          // Check existing user rating & review
           if (storeData.ratings && Array.isArray(storeData.ratings)) {
             const foundUserRating = storeData.ratings.find(
               (r) => r.userId === user.id || r.user?.id === user.id
@@ -65,7 +83,6 @@ const StoreProfilePage = () => {
             }
           }
 
-          // Check if favorited
           try {
             const favRes = await getUserFavoriteStoreIds();
             if (favRes.status === 'success') {
@@ -73,7 +90,7 @@ const StoreProfilePage = () => {
               setIsSaved(ids.includes(id));
             }
           } catch {
-            // Ignore favorite check error silently
+            // Ignore favorite check error
           }
         }
       } else {
@@ -100,9 +117,7 @@ const StoreProfilePage = () => {
       return;
     }
 
-    if (user?.role !== 'USER') {
-      return;
-    }
+    if (user?.role !== 'USER') return;
 
     setSavingFavorite(true);
     try {
@@ -127,9 +142,7 @@ const StoreProfilePage = () => {
       return;
     }
 
-    if (user?.role !== 'USER') {
-      return;
-    }
+    if (user?.role !== 'USER') return;
 
     setRateModalOpen(true);
     setModalError('');
@@ -188,6 +201,54 @@ const StoreProfilePage = () => {
     }
   };
 
+  const handleOpenReportModal = (ratingObj) => {
+    if (!isAuthenticated) {
+      setPromptMessage('Sign in to report inappropriate reviews to administrators');
+      setSignInPromptOpen(true);
+      return;
+    }
+
+    if (user?.role !== 'USER') return;
+
+    setTargetRatingObj(ratingObj);
+    setReportReason('SPAM');
+    setReportDescription('');
+    setReportError('');
+    setReportSuccess('');
+    setReportModalOpen(true);
+  };
+
+  const handleCloseReportModal = () => {
+    setReportModalOpen(false);
+    setTargetRatingObj(null);
+    setReportError('');
+    setReportSuccess('');
+  };
+
+  const handleSubmitReportForm = async (e) => {
+    e.preventDefault();
+    if (!targetRatingObj) return;
+
+    setReporting(true);
+    setReportError('');
+    setReportSuccess('');
+
+    try {
+      const response = await reportReview(targetRatingObj.id, reportReason, reportDescription);
+      if (response.status === 'success') {
+        setReportSuccess('Report submitted. Administrators will inspect this review.');
+        setReportedRatingIds((prev) => [...prev, targetRatingObj.id]);
+        setTimeout(() => {
+          handleCloseReportModal();
+        }, 1200);
+      }
+    } catch (err) {
+      setReportError(err.response?.data?.message || 'Failed to submit report. Please try again.');
+    } finally {
+      setReporting(false);
+    }
+  };
+
   const getRatingLabel = (rating) => {
     switch (rating) {
       case 1: return 'Poor';
@@ -201,9 +262,9 @@ const StoreProfilePage = () => {
 
   const currentDisplayRating = hoverRating || selectedRating;
 
-  // Processed Reviews (Sorted & Filtered)
+  // Processed Reviews
   const rawRatingsList = store?.ratings || [];
-  
+
   const writtenReviewsCount = useMemo(() => {
     return rawRatingsList.filter((r) => r.review && r.review.trim().length > 0).length;
   }, [rawRatingsList]);
@@ -215,7 +276,6 @@ const StoreProfilePage = () => {
     } else if (reviewSort === 'lowest') {
       list.sort((a, b) => a.rating - b.rating || new Date(b.createdAt) - new Date(a.createdAt));
     } else {
-      // recent (default)
       list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
     return list;
@@ -298,7 +358,6 @@ const StoreProfilePage = () => {
   return (
     <div className="min-h-screen bg-[#F7F6F1] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 text-[#171A18] text-left">
       <div className="max-w-5xl mx-auto space-y-8">
-        {/* Back Button */}
         <div>
           <Link
             to="/stores"
@@ -344,7 +403,6 @@ const StoreProfilePage = () => {
               </p>
             </div>
 
-            {/* Action Buttons: Save & Rate */}
             <div className="flex flex-wrap items-center gap-3 shrink-0 self-start md:self-auto">
               <button
                 type="button"
@@ -410,7 +468,6 @@ const StoreProfilePage = () => {
               </div>
             </div>
 
-            {/* Distribution Breakdown (5★–1★) */}
             <div className="md:col-span-2 p-6 bg-[#F7F6F1] border border-[#E2E5DF] rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-extrabold text-[#707873] uppercase tracking-wider">
@@ -444,13 +501,12 @@ const StoreProfilePage = () => {
         <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E5DF] pb-4">
             <div>
-              <h3 className="font-display text-xl font-bold text-[#171A18]">Customer Reviews & Feedback</h3>
+              <h3 className="font-display text-xl font-bold text-[#171A18]">Customer Reviews & Owner Responses</h3>
               <p className="text-xs text-[#707873]">
                 {totalRatingsCount} total ratings • {writtenReviewsCount} written reviews
               </p>
             </div>
 
-            {/* Sort Selector Controls */}
             {rawRatingsList.length > 0 && (
               <div className="flex items-center space-x-2 text-xs">
                 <SlidersHorizontal className="w-3.5 h-3.5 text-[#173D32]" />
@@ -476,9 +532,31 @@ const StoreProfilePage = () => {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <StarRating value={r.rating} readOnly size="xs" />
-                        <span className="text-[11px] font-bold text-[#173D32] bg-[#E7F0EB] px-2.5 py-0.5 rounded-full border border-[#CDE0D5]">
-                          {r.rating}.0 / 5.0
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-[11px] font-bold text-[#173D32] bg-[#E7F0EB] px-2.5 py-0.5 rounded-full border border-[#CDE0D5]">
+                            {r.rating}.0 / 5.0
+                          </span>
+                          {/* Report Action Button */}
+                          {(!user || user?.id !== r.userId) && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenReportModal(r)}
+                              disabled={reportedRatingIds.includes(r.id)}
+                              className={`p-1 rounded-md transition-colors ${
+                                reportedRatingIds.includes(r.id)
+                                  ? 'text-emerald-600 bg-emerald-50'
+                                  : 'text-[#9CA59E] hover:text-rose-600 hover:bg-rose-50'
+                              }`}
+                              title={reportedRatingIds.includes(r.id) ? 'Report submitted' : 'Report review'}
+                            >
+                              {reportedRatingIds.includes(r.id) ? (
+                                <Check className="w-3.5 h-3.5" />
+                              ) : (
+                                <Flag className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       {/* Written Review Text */}
@@ -488,6 +566,26 @@ const StoreProfilePage = () => {
                         </p>
                       ) : (
                         <p className="text-xs text-[#9CA59E] italic">No written review submitted.</p>
+                      )}
+
+                      {/* Store Owner Public Response */}
+                      {r.ownerReply && (
+                        <div className="mt-3 p-3.5 bg-[#E7F0EB] border border-[#CDE0D5] rounded-xl space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-wider flex items-center space-x-1">
+                              <CornerDownRight className="w-3 h-3 text-[#C9A24A]" />
+                              <span>Store Owner Response</span>
+                            </span>
+                            {r.ownerReplyAt && (
+                              <span className="text-[9px] text-[#707873] font-mono">
+                                {new Date(r.ownerReplyAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-[#173D32] font-medium leading-relaxed italic bg-white/90 p-2.5 rounded-lg border border-[#CDE0D5] whitespace-pre-wrap">
+                            "{r.ownerReply}"
+                          </p>
+                        </div>
                       )}
                     </div>
 
@@ -515,7 +613,6 @@ const StoreProfilePage = () => {
                 ))}
               </div>
 
-              {/* Load More Pagination Button */}
               {hasMoreReviews && (
                 <div className="pt-4 text-center">
                   <button
@@ -549,7 +646,7 @@ const StoreProfilePage = () => {
         </div>
       </div>
 
-      {/* Interactive Rating & Review Modal for Logged-In USER */}
+      {/* Interactive Rating & Review Modal */}
       {rateModalOpen && (
         <div
           onClick={(e) => { if (e.target === e.currentTarget) handleCloseRateModal(); }}
@@ -579,7 +676,6 @@ const StoreProfilePage = () => {
             )}
 
             <form onSubmit={handleSubmitRatingForm} className="space-y-5">
-              {/* Star Rating Selector */}
               <div className="space-y-3 py-2 text-center bg-[#F7F6F1] p-4 rounded-2xl border border-[#E2E5DF]">
                 <label className="block text-xs font-bold text-[#171A18]">
                   1. How was your experience? (Required)
@@ -601,7 +697,6 @@ const StoreProfilePage = () => {
                 </div>
               </div>
 
-              {/* Optional Text Area Review */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs font-bold text-[#171A18]">
                   <label htmlFor="reviewInput">2. Write a review (Optional)</label>
@@ -641,7 +736,90 @@ const StoreProfilePage = () => {
         </div>
       )}
 
-      {/* Sign In Prompt Modal for Unauthenticated Visitors */}
+      {/* Review Reporting Modal */}
+      {reportModalOpen && targetRatingObj && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) handleCloseReportModal(); }}
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4"
+        >
+          <div className="bg-white border border-[#E2E5DF] rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 text-left">
+            <div className="flex items-start justify-between border-b border-[#E2E5DF] pb-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl">
+                  <Flag className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-display text-lg font-bold text-[#171A18]">Report Review</h3>
+                  <p className="text-xs text-[#707873]">Flag inappropriate review for administrator moderation</p>
+                </div>
+              </div>
+            </div>
+
+            {reportError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-[#9B2C2C] text-xs font-semibold rounded-xl">
+                {reportError}
+              </div>
+            )}
+            {reportSuccess && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-xl flex items-center space-x-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{reportSuccess}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitReportForm} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-[#171A18] uppercase tracking-wider">
+                  Why are you reporting this review? (Required)
+                </label>
+                <select
+                  value={reportReason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                  className="w-full p-2.5 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl text-xs font-semibold text-[#171A18] focus:outline-none focus:ring-2 focus:ring-[#173D32]"
+                  required
+                >
+                  {REPORT_REASONS.map((r) => (
+                    <option key={r.value} value={r.value}>{r.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-[#171A18] uppercase tracking-wider">
+                  Additional Details (Optional)
+                </label>
+                <textarea
+                  rows={3}
+                  maxLength={500}
+                  value={reportDescription}
+                  onChange={(e) => setReportDescription(e.target.value)}
+                  placeholder="Provide any additional context for administrators..."
+                  className="w-full p-3 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl text-xs text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:ring-2 focus:ring-[#173D32] resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-2 border-t border-[#E2E5DF]">
+                <button
+                  type="button"
+                  onClick={handleCloseReportModal}
+                  className="px-4 py-2.5 bg-white text-[#707873] border border-[#E2E5DF] rounded-xl text-xs font-semibold hover:bg-[#F7F6F1] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={reporting}
+                  className="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-xl text-xs disabled:opacity-40 transition-colors shadow-xs cursor-pointer"
+                >
+                  {reporting ? 'Submitting...' : 'Submit Report'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Sign In Prompt Modal */}
       {signInPromptOpen && (
         <div
           onClick={(e) => { if (e.target === e.currentTarget) setSignInPromptOpen(false); }}
@@ -661,7 +839,7 @@ const StoreProfilePage = () => {
             </div>
 
             <p className="text-xs text-[#707873] leading-relaxed">
-              Create a free account or sign in to save stores to your favorites list and submit authentic ratings & written reviews.
+              Create a free account or sign in to save stores to your favorites list, rate businesses, and submit review reports.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-end gap-2.5 pt-2 border-t border-[#E2E5DF]">

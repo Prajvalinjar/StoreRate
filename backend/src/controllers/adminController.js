@@ -203,6 +203,78 @@ const rejectStore = async (req, res, next) => {
   }
 };
 
+const listReviewReports = async (req, res, next) => {
+  try {
+    const result = await adminService.getReviewReports();
+    return res.status(200).json({
+      status: 'success',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const dismissReviewReport = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const report = await adminService.dismissReport(id, req.user.id);
+    return res.status(200).json({
+      status: 'success',
+      message: 'Review report dismissed successfully.',
+      data: { report },
+    });
+  } catch (error) {
+    if (error instanceof adminService.AdminError) {
+      return res.status(error.statusCode).json({
+        status: 'error',
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+const hideReportedReview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const report = await adminService.hideReview(id, req.user.id);
+    return res.status(200).json({
+      status: 'success',
+      message: 'Review hidden from public view.',
+      data: { report },
+    });
+  } catch (error) {
+    if (error instanceof adminService.AdminError) {
+      return res.status(error.statusCode).json({
+        status: 'error',
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+const restoreReportedReview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const report = await adminService.restoreReview(id, req.user.id);
+    return res.status(200).json({
+      status: 'success',
+      message: 'Review restored to public view.',
+      data: { report },
+    });
+  } catch (error) {
+    if (error instanceof adminService.AdminError) {
+      return res.status(error.statusCode).json({
+        status: 'error',
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboard,
   listUsers,
@@ -214,4 +286,8 @@ module.exports = {
   listPendingStores,
   approveStore,
   rejectStore,
+  listReviewReports,
+  dismissReviewReport,
+  hideReportedReview,
+  restoreReportedReview,
 };

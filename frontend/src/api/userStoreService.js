@@ -5,13 +5,13 @@ export const getStores = async (params = {}) => {
   return response.data;
 };
 
-export const submitRating = async (storeId, rating) => {
-  const response = await axiosInstance.post(`/stores/${storeId}/rating`, { rating });
+export const submitRating = async (storeId, rating, review = null) => {
+  const response = await axiosInstance.post(`/stores/${storeId}/rating`, { rating, review });
   return response.data;
 };
 
-export const updateRating = async (storeId, rating) => {
-  const response = await axiosInstance.put(`/stores/${storeId}/rating`, { rating });
+export const updateRating = async (storeId, rating, review = null) => {
+  const response = await axiosInstance.put(`/stores/${storeId}/rating`, { rating, review });
   return response.data;
 };
 
@@ -37,5 +37,10 @@ export const getUserFavorites = async () => {
 
 export const getUserFavoriteStoreIds = async () => {
   const response = await axiosInstance.get('/stores/favorite-ids');
+  return response.data;
+};
+
+export const reportReview = async (ratingId, reason, description = null) => {
+  const response = await axiosInstance.post(`/reviews/${ratingId}/report`, { reason, description });
   return response.data;
 };

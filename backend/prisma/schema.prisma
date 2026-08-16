@@ -19,6 +19,26 @@ enum StoreStatus {
   REJECTED
 }
 
+enum ReviewStatus {
+  VISIBLE
+  HIDDEN
+}
+
+enum ReportReason {
+  SPAM
+  OFFENSIVE
+  HARASSMENT
+  MISLEADING
+  INAPPROPRIATE
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  DISMISSED
+  RESOLVED
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -29,9 +49,11 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  stores    Store[]    @relation("StoreOwner")
-  ratings   Rating[]
-  favorites Favorite[]
+  stores           Store[]        @relation("StoreOwner")
+  ratings          Rating[]
+  favorites        Favorite[]
+  submittedReports ReviewReport[] @relation("ReportReporter")
+  resolvedReports  ReviewReport[] @relation("ReportResolver")
 
   @@map("users")
 }
@@ -58,15 +80,20 @@ model Store {
 }
 
 model Rating {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  storeId   String
-  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  rating    Int
-  review    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String       @id @default(uuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeId      String
+  store        Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  rating       Int
+  review       String?
+  ownerReply   String?
+  ownerReplyAt DateTime?
+  reviewStatus ReviewStatus @default(VISIBLE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  reports ReviewReport[]
 
   @@unique([userId, storeId])
   @@index([userId])
@@ -86,4 +113,24 @@ model Favorite {
   @@index([userId])
   @@index([storeId])
   @@map("favorites")
+}
+
+model ReviewReport {
+  id           String       @id @default(uuid())
+  ratingId     String
+  rating       Rating       @relation(fields: [ratingId], references: [id], onDelete: Cascade)
+  reporterId   String
+  reporter     User         @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reason       ReportReason
+  description  String?
+  status       ReportStatus @default(PENDING)
+  createdAt    DateTime     @default(now())
+  resolvedAt   DateTime?
+  resolvedById String?
+  resolvedBy   User?        @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@unique([ratingId, reporterId])
+  @@index([ratingId])
+  @@index([reporterId])
+  @@map("review_reports")
 }

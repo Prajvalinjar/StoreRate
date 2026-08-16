@@ -12,6 +12,10 @@ const {
   listPendingStores,
   approveStore,
   rejectStore,
+  listReviewReports,
+  dismissReviewReport,
+  hideReportedReview,
+  restoreReportedReview,
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -31,5 +35,11 @@ router.put('/stores/:id/reject', rejectStore);
 router.get('/stores', listStores);
 router.post('/stores', addStore);
 router.get('/stores/:id', getStore);
+
+// Review Moderation Routes
+router.get('/review-reports', listReviewReports);
+router.put('/review-reports/:id/dismiss', dismissReviewReport);
+router.put('/review-reports/:id/hide', hideReportedReview);
+router.put('/review-reports/:id/restore', restoreReportedReview);
 
 module.exports = router;

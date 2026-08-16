@@ -191,6 +191,9 @@ const getPublicStoreById = async (id) => {
           id: true,
           rating: true,
           review: true,
+          ownerReply: true,
+          ownerReplyAt: true,
+          reviewStatus: true,
           createdAt: true,
           user: {
             select: {
@@ -229,6 +232,14 @@ const getPublicStoreById = async (id) => {
 
   const { ratings, ...storeData } = store;
 
+  // Process ratings for public display: hide written text if reviewStatus === 'HIDDEN'
+  const publicRatingsList = ratings.map((r) => {
+    if (r.reviewStatus === 'HIDDEN') {
+      return { ...r, review: null };
+    }
+    return r;
+  });
+
   return {
     ...storeData,
     averageRating,
@@ -240,8 +251,8 @@ const getPublicStoreById = async (id) => {
       ratingCount: totalRatings,
     },
     distribution,
-    recentRatings: ratings.slice(0, 20),
-    ratings: ratings.slice(0, 20),
+    recentRatings: publicRatingsList.slice(0, 20),
+    ratings: publicRatingsList.slice(0, 20),
   };
 };
 

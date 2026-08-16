@@ -49,3 +49,23 @@ export const rejectStore = async (storeId, reason) => {
   const response = await axiosInstance.put(`/admin/stores/${storeId}/reject`, { reason });
   return response.data;
 };
+
+export const getReviewReports = async () => {
+  const response = await axiosInstance.get('/admin/review-reports');
+  return response.data;
+};
+
+export const dismissReviewReport = async (reportId) => {
+  const response = await axiosInstance.put(`/admin/review-reports/${reportId}/dismiss`);
+  return response.data;
+};
+
+export const hideReportedReview = async (reportId) => {
+  const response = await axiosInstance.put(`/admin/review-reports/${reportId}/hide`);
+  return response.data;
+};
+
+export const restoreReportedReview = async (reportId) => {
+  const response = await axiosInstance.put(`/admin/review-reports/${reportId}/restore`);
+  return response.data;
+};
