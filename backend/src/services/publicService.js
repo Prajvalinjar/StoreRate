@@ -36,7 +36,9 @@ const getPublicStats = async () => {
 /**
  * Retrieves public store listings with optional search (q) and pagination.
  * Only APPROVED stores are returned publicly.
- * Recommended sorting uses a weighted Bayesian average formula.
+ * Recommended sorting uses a weighted Bayesian average formula:
+ * weightedScore = (v / (v + m)) * R + (m / (v + m)) * C
+ * where C = global average rating (3.9★), m = minimum rating confidence threshold (3).
  */
 const getPublicStores = async ({ q, category, minRating, sort = 'recommended', page = 1, limit = 12 } = {}) => {
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -61,6 +63,8 @@ const getPublicStores = async ({ q, category, minRating, sort = 'recommended', p
         { name: { contains: searchTerm, mode: 'insensitive' } },
         { address: { contains: searchTerm, mode: 'insensitive' } },
         { category: { contains: searchTerm, mode: 'insensitive' } },
+        { city: { contains: searchTerm, mode: 'insensitive' } },
+        { description: { contains: searchTerm, mode: 'insensitive' } },
       ],
     });
   }
@@ -76,9 +80,13 @@ const getPublicStores = async ({ q, category, minRating, sort = 'recommended', p
       name: true,
       email: true,
       address: true,
+      city: true,
+      phone: true,
       category: true,
+      description: true,
       imageUrl: true,
       status: true,
+      isVerified: true,
       createdAt: true,
       ratings: {
         select: {
@@ -99,7 +107,7 @@ const getPublicStores = async ({ q, category, minRating, sort = 'recommended', p
     });
   });
 
-  const C = totalRatingCount > 0 ? totalRatingSum / totalRatingCount : 4.0;
+  const C = totalRatingCount > 0 ? totalRatingSum / totalRatingCount : 3.9;
   const m = 3; // Minimum rating confidence threshold constant
 
   let stores = rawStores.map((store) => {
@@ -115,6 +123,8 @@ const getPublicStores = async ({ q, category, minRating, sort = 'recommended', p
 
     return {
       ...storeData,
+      city: store.city || 'Kolhapur',
+      isVerified: store.isVerified !== undefined ? store.isVerified : true,
       averageRating,
       totalRatings: v,
       ratingCount: v,
@@ -130,48 +140,38 @@ const getPublicStores = async ({ q, category, minRating, sort = 'recommended', p
 
   // Sorting Logic
   if (sort === 'rating_desc' || sort === 'highest_rated') {
-    // Highest Rated: Sort by raw average rating DESC, tie-breaker totalRatings DESC
     stores.sort((a, b) => b.averageRating - a.averageRating || b.totalRatings - a.totalRatings);
   } else if (sort === 'ratings_count_desc' || sort === 'most_rated') {
-    // Most Rated: Sort by total rating count DESC, tie-breaker averageRating DESC
     stores.sort((a, b) => b.totalRatings - a.totalRatings || b.averageRating - a.averageRating);
   } else if (sort === 'newest' || sort === 'newest_added') {
-    // Newest Added: Sort by createdAt DESC
     stores.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } else if (sort === 'name_asc') {
-    // Name A-Z
     stores.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sort === 'name_desc') {
-    // Name Z-A
     stores.sort((a, b) => b.name.localeCompare(a.name));
   } else {
-    // Recommended (default): Sort by Weighted Bayesian Score DESC, tie-breaker totalRatings DESC
-    stores.sort((a, b) => b.weightedScore - a.weightedScore || b.totalRatings - a.totalRatings || a.name.localeCompare(b.name));
+    // Default: 'recommended' -> Sort by Weighted Bayesian Score DESC
+    stores.sort((a, b) => b.weightedScore - a.weightedScore || b.totalRatings - a.totalRatings);
   }
 
   const total = stores.length;
-  const skip = (pageNum - 1) * limitNum;
-  // Omit internal weightedScore before returning payload
-  const paginatedStores = stores.slice(skip, skip + limitNum).map(({ weightedScore, ...cleanStore }) => cleanStore);
+  const startIndex = (pageNum - 1) * limitNum;
+  const paginatedStores = stores.slice(startIndex, startIndex + limitNum);
 
   return {
     stores: paginatedStores,
     pagination: {
+      total,
       page: pageNum,
       limit: limitNum,
-      total,
       totalPages: Math.ceil(total / limitNum) || 1,
     },
   };
 };
 
-const getTopRatedStores = async (limit = 6) => {
-  const result = await getPublicStores({ sort: 'recommended', page: 1, limit });
-  return { stores: result.stores };
-};
-
 /**
- * Retrieves single public store detail by ID.
+ * Retrieves store detail by ID for public view.
+ * Only APPROVED stores are viewable publicly.
  */
 const getPublicStoreById = async (id) => {
   const store = await prisma.store.findUnique({
@@ -181,9 +181,13 @@ const getPublicStoreById = async (id) => {
       name: true,
       email: true,
       address: true,
+      city: true,
+      phone: true,
       category: true,
+      description: true,
       imageUrl: true,
       status: true,
+      isVerified: true,
       rejectionReason: true,
       createdAt: true,
       ratings: {
@@ -242,6 +246,8 @@ const getPublicStoreById = async (id) => {
 
   return {
     ...storeData,
+    city: store.city || 'Kolhapur',
+    isVerified: store.isVerified !== undefined ? store.isVerified : true,
     averageRating,
     totalRatings,
     ratingCount: totalRatings,
@@ -259,6 +265,5 @@ const getPublicStoreById = async (id) => {
 module.exports = {
   getPublicStats,
   getPublicStores,
-  getTopRatedStores,
   getPublicStoreById,
 };

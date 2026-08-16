@@ -69,9 +69,16 @@ const StoreCard = ({ store, onRate, isSaved = false, onToggleFavorite, savingFav
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
         
-        {/* Category Pill */}
-        <div className="absolute top-3 left-3 bg-[#173D32]/90 backdrop-blur-xs text-[#E7F0EB] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border border-[#2F6654] z-10">
-          {store.category || visual.category}
+        {/* Category Pill & Verified Badge */}
+        <div className="absolute top-3 left-3 flex items-center space-x-1.5 z-10">
+          <span className="bg-[#173D32]/90 backdrop-blur-xs text-[#E7F0EB] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border border-[#2F6654]">
+            {store.category || visual.category}
+          </span>
+          {store.isVerified !== false && (
+            <span className="bg-[#C9A24A]/90 backdrop-blur-xs text-[#173D32] text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full border border-amber-300">
+              ✓ Verified
+            </span>
+          )}
         </div>
 
         {/* Favorite Save Button */}

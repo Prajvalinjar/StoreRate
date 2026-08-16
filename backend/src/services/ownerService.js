@@ -16,8 +16,13 @@ const getOwnerDashboard = async (ownerId) => {
       name: true,
       email: true,
       address: true,
+      city: true,
+      phone: true,
       category: true,
+      description: true,
+      imageUrl: true,
       status: true,
+      isVerified: true,
       rejectionReason: true,
       createdAt: true,
       ratings: {
@@ -70,8 +75,13 @@ const getOwnerDashboard = async (ownerId) => {
       name: store.name,
       email: store.email,
       address: store.address,
+      city: store.city || 'Kolhapur',
+      phone: store.phone,
       category: store.category || 'General',
+      description: store.description,
+      imageUrl: store.imageUrl,
       status: store.status,
+      isVerified: store.isVerified,
       rejectionReason: store.rejectionReason,
       createdAt: store.createdAt,
       averageRating,
@@ -81,7 +91,7 @@ const getOwnerDashboard = async (ownerId) => {
   };
 };
 
-const createOwnerStore = async (ownerId, { name, email, address, category }) => {
+const createOwnerStore = async (ownerId, { name, email, address, category, city, phone, description, imageUrl }) => {
   const existingStore = await prisma.store.findFirst({
     where: { ownerId },
   });
@@ -97,7 +107,11 @@ const createOwnerStore = async (ownerId, { name, email, address, category }) => 
       name,
       email: email.toLowerCase(),
       address,
+      city: city && city.trim() ? city.trim() : 'Kolhapur',
+      phone: phone && phone.trim() ? phone.trim() : null,
       category: storeCategory,
+      description: description && description.trim() ? description.trim() : null,
+      imageUrl: imageUrl && imageUrl.trim() ? imageUrl.trim() : null,
       ownerId,
       status: 'PENDING',
     },
@@ -123,6 +137,38 @@ const createOwnerStore = async (ownerId, { name, email, address, category }) => 
   }
 
   return newStore;
+};
+
+const updateOwnerStore = async (ownerId, storeId, updateData) => {
+  const store = await prisma.store.findUnique({
+    where: { id: storeId },
+  });
+
+  if (!store) {
+    throw new OwnerError('Store not found', 404);
+  }
+
+  if (store.ownerId !== ownerId) {
+    throw new OwnerError('Forbidden: You can only update your assigned store', 403);
+  }
+
+  const { name, category, description, address, city, phone, imageUrl } = updateData;
+
+  const dataToUpdate = {};
+  if (name && name.trim()) dataToUpdate.name = name.trim();
+  if (category && category.trim()) dataToUpdate.category = category.trim();
+  if (description !== undefined) dataToUpdate.description = description ? description.trim() : null;
+  if (address && address.trim()) dataToUpdate.address = address.trim();
+  if (city !== undefined) dataToUpdate.city = city ? city.trim() : 'Kolhapur';
+  if (phone !== undefined) dataToUpdate.phone = phone ? phone.trim() : null;
+  if (imageUrl !== undefined) dataToUpdate.imageUrl = imageUrl ? imageUrl.trim() : null;
+
+  const updatedStore = await prisma.store.update({
+    where: { id: storeId },
+    data: dataToUpdate,
+  });
+
+  return updatedStore;
 };
 
 const replyToRating = async (ownerId, ratingId, replyText) => {
@@ -199,6 +245,7 @@ module.exports = {
   OwnerError,
   getOwnerDashboard,
   createOwnerStore,
+  updateOwnerStore,
   replyToRating,
   deleteReplyFromRating,
 };
