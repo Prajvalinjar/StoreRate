@@ -21,6 +21,7 @@ import UserOverviewPage from './pages/UserOverviewPage';
 import UserStoresPage from './pages/UserStoresPage';
 import UserRatingsPage from './pages/UserRatingsPage';
 import UserProfilePage from './pages/UserProfilePage';
+import MyFavoritesPage from './pages/MyFavoritesPage';
 
 import OwnerDashboardPage from './pages/OwnerDashboardPage';
 import OwnerStoreDetailsPage from './pages/OwnerStoreDetailsPage';
@@ -111,6 +112,16 @@ const AppLayout = () => {
           <ProtectedRoute>
             <RoleRoute allowedRoles={['USER']}>
               <AppShell><UserRatingsPage /></AppShell>
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/user/favorites"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={['USER']}>
+              <AppShell><MyFavoritesPage /></AppShell>
             </RoleRoute>
           </ProtectedRoute>
         }

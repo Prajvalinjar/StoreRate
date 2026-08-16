@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getMyRatings, getStores } from '../api/userStoreService';
+import { getMyRatings, getStores, getUserFavorites } from '../api/userStoreService';
 import StoreCard from '../components/StoreCard';
 import { 
   Compass, Star, Heart, CheckCircle2, ArrowRight, Store, MapPin, 
-  Sparkles, RefreshCw, Award, Activity 
+  Sparkles, RefreshCw, Award 
 } from 'lucide-react';
 
 const UserOverviewPage = () => {
   const { user } = useAuth();
   const [ratingsList, setRatingsList] = useState([]);
+  const [favoritesList, setFavoritesList] = useState([]);
   const [topStores, setTopStores] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,9 +19,10 @@ const UserOverviewPage = () => {
     const fetchOverviewData = async () => {
       setLoading(true);
       try {
-        const [ratingsRes, storesRes] = await Promise.all([
+        const [ratingsRes, storesRes, favRes] = await Promise.all([
           getMyRatings().catch(() => ({ status: 'error', data: { ratings: [] } })),
           getStores({ sort: 'rating_desc', limit: 4 }).catch(() => ({ status: 'error', data: { stores: [] } })),
+          getUserFavorites().catch(() => ({ status: 'error', data: { favorites: [] } })),
         ]);
 
         if (ratingsRes.status === 'success') {
@@ -28,6 +30,9 @@ const UserOverviewPage = () => {
         }
         if (storesRes.status === 'success') {
           setTopStores(storesRes.data.stores || []);
+        }
+        if (favRes.status === 'success') {
+          setFavoritesList(favRes.data.favorites || []);
         }
       } catch (err) {
         console.error('Failed to load user overview telemetry:', err);
@@ -47,6 +52,7 @@ const UserOverviewPage = () => {
   };
 
   const totalRated = ratingsList.length;
+  const favoritesCount = favoritesList.length;
   const avgGiven = totalRated > 0
     ? Number((ratingsList.reduce((acc, r) => acc + r.rating, 0) / totalRated).toFixed(1))
     : 0.0;
@@ -84,11 +90,11 @@ const UserOverviewPage = () => {
           </Link>
 
           <Link
-            to="/user/ratings"
+            to="/user/favorites"
             className="px-6 py-3 bg-[#235344] hover:bg-[#2F6654] text-white border border-[#3E7D69] font-bold rounded-xl text-xs flex items-center space-x-2 transition-all"
           >
-            <Star className="w-4 h-4 text-[#C9A24A] fill-[#C9A24A]" />
-            <span>View My Ratings</span>
+            <Heart className="w-4 h-4 text-rose-400 fill-rose-400" />
+            <span>View Saved Stores ({favoritesCount})</span>
           </Link>
         </div>
       </div>
@@ -127,20 +133,25 @@ const UserOverviewPage = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2 flex flex-col justify-between">
+        <Link
+          to="/user/favorites"
+          className="bg-white border border-[#E2E5DF] hover:border-[#173D32] rounded-2xl p-5 shadow-xs space-y-2 flex flex-col justify-between transition-all group"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-extrabold text-[#707873] uppercase tracking-wider">
-              Favorite Stores
+            <span className="text-[10px] font-extrabold text-[#707873] uppercase tracking-wider group-hover:text-[#173D32]">
+              Saved Stores
             </span>
             <div className="p-2 bg-rose-50 text-rose-700 rounded-xl border border-rose-200">
               <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
             </div>
           </div>
           <div>
-            <div className="text-3xl font-black text-[#171A18]">0</div>
+            <div className="text-3xl font-black text-[#171A18] group-hover:text-[#173D32]">
+              {loading ? '-' : favoritesCount}
+            </div>
             <p className="text-[11px] text-[#707873] mt-0.5">Saved store bookmarks</p>
           </div>
-        </div>
+        </Link>
 
         <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2 flex flex-col justify-between">
           <div className="flex items-center justify-between">

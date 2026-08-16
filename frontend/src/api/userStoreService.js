@@ -19,3 +19,23 @@ export const getMyRatings = async () => {
   const response = await axiosInstance.get('/stores/my-ratings');
   return response.data;
 };
+
+export const addFavorite = async (storeId) => {
+  const response = await axiosInstance.post(`/stores/${storeId}/favorite`);
+  return response.data;
+};
+
+export const removeFavorite = async (storeId) => {
+  const response = await axiosInstance.delete(`/stores/${storeId}/favorite`);
+  return response.data;
+};
+
+export const getUserFavorites = async () => {
+  const response = await axiosInstance.get('/stores/favorites');
+  return response.data;
+};
+
+export const getUserFavoriteStoreIds = async () => {
+  const response = await axiosInstance.get('/stores/favorite-ids');
+  return response.data;
+};

@@ -26,7 +26,7 @@ export const StoreGridSkeleton = ({ count = 6 }) => (
 );
 
 export const StoreProfileSkeleton = () => (
-  <div className="max-w-4xl mx-auto space-y-6 animate-pulse">
+  <div className="max-w-4xl mx-auto space-y-6 animate-pulse text-left">
     <div className="h-4 bg-[#E2E5DF] rounded w-32" />
     <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 space-y-6">
       <div className="h-64 bg-[#E7F0EB] rounded-2xl w-full" />
@@ -57,3 +57,5 @@ export const DashboardSkeleton = () => (
     <div className="h-64 bg-white border border-[#E2E5DF] rounded-2xl p-6" />
   </div>
 );
+
+export default StoreProfileSkeleton;

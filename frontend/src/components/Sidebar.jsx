@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   Store, Star, Compass, User as UserIcon, Shield, LayoutDashboard, 
-  TrendingUp, CircleHelp, LogOut, ExternalLink, Users, Clock, ChevronRight
+  TrendingUp, CircleHelp, LogOut, ExternalLink, Users, Clock, ChevronRight, Heart
 } from 'lucide-react';
 
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
@@ -25,7 +25,6 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     return (words[0][0] + words[words.length - 1][0]).toUpperCase();
   };
 
-  // Single active state route matcher
   const isItemActive = (key) => {
     const path = location.pathname;
     const search = location.search;
@@ -34,6 +33,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       if (key === 'overview') return path === '/user';
       if (key === 'explore') return path === '/stores';
       if (key === 'ratings') return path === '/user/ratings';
+      if (key === 'favorites') return path === '/user/favorites';
       if (key === 'profile') return path === '/user/profile';
     }
 
@@ -63,6 +63,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           { key: 'overview', label: 'Overview', path: '/user', icon: LayoutDashboard },
           { key: 'explore', label: 'Explore Stores', path: '/stores', icon: Compass },
           { key: 'ratings', label: 'My Ratings', path: '/user/ratings', icon: Star },
+          { key: 'favorites', label: 'Favorites', path: '/user/favorites', icon: Heart },
           { key: 'profile', label: 'My Profile', path: '/user/profile', icon: UserIcon },
         ];
       case 'STORE_OWNER':
@@ -113,7 +114,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
             {getInitials(user.name)}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-bold text-xs text-white truncate" title={user.name}>
+            <p className="font-bold text-xs text-[#E7F0EB] truncate" title={user.name}>
               {user.name}
             </p>
             <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider bg-[#173D32] text-[#C9A24A] border border-[#2F6654]">

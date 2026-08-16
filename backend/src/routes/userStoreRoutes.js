@@ -2,6 +2,7 @@ const express = require('express');
 const { requireAuth } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 const { listStores, postRating, putRating, listUserRatings } = require('../controllers/userStoreController');
+const { addFavorite, removeFavorite, listFavorites, listFavoriteIds } = require('../controllers/favoriteController');
 
 const router = express.Router();
 
@@ -9,8 +10,14 @@ const router = express.Router();
 router.use(requireAuth, requireRole('USER'));
 
 router.get('/my-ratings', listUserRatings);
+router.get('/favorites', listFavorites);
+router.get('/favorite-ids', listFavoriteIds);
+
 router.get('/', listStores);
 router.post('/:storeId/rating', postRating);
 router.put('/:storeId/rating', putRating);
+
+router.post('/:storeId/favorite', addFavorite);
+router.delete('/:storeId/favorite', removeFavorite);
 
 module.exports = router;

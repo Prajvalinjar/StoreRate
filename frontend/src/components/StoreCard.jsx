@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Edit3, Star, Store, Sparkles } from 'lucide-react';
+import { MapPin, Edit3, Star, Store, Sparkles, Heart, RefreshCw } from 'lucide-react';
 import StarRating from './StarRating';
 import SafeImage from './SafeImage';
 
@@ -41,7 +41,7 @@ const getStoreVisual = (storeId, storeName) => {
   return STORE_IMAGES[index];
 };
 
-const StoreCard = ({ store, onRate, onViewStore }) => {
+const StoreCard = ({ store, onRate, isSaved = false, onToggleFavorite, savingFavorite = false }) => {
   const { id, name, address, averageRating, totalRatings, userRating } = store;
   const visual = getStoreVisual(id, name);
 
@@ -49,6 +49,14 @@ const StoreCard = ({ store, onRate, onViewStore }) => {
   const ratingPercent = totalRatings > 0
     ? Math.min(Math.max(((averageRating - 1) / 4) * 100, 0), 100)
     : 0;
+
+  const handleFavoriteClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onToggleFavorite) {
+      onToggleFavorite(id, !isSaved);
+    }
+  };
 
   return (
     <div className="bg-white border border-[#E2E5DF] rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between hover:border-[#173D32]/40 hover:shadow-xl transition-all duration-300 group">
@@ -65,6 +73,28 @@ const StoreCard = ({ store, onRate, onViewStore }) => {
         <div className="absolute top-3 left-3 bg-[#173D32]/90 backdrop-blur-xs text-[#E7F0EB] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border border-[#2F6654] z-10">
           {store.category || visual.category}
         </div>
+
+        {/* Favorite Save Button */}
+        {onToggleFavorite && (
+          <button
+            type="button"
+            onClick={handleFavoriteClick}
+            disabled={savingFavorite}
+            className={`absolute top-3 right-3 z-20 p-2 rounded-xl border backdrop-blur-xs transition-all duration-200 cursor-pointer ${
+              isSaved
+                ? 'bg-rose-500 text-white border-rose-600 shadow-md'
+                : 'bg-black/40 hover:bg-black/60 text-white border-white/20'
+            }`}
+            aria-label={isSaved ? 'Remove from saved stores' : 'Save store'}
+            title={isSaved ? 'Saved store' : 'Save store'}
+          >
+            {savingFavorite ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Heart className={`w-4 h-4 transition-transform ${isSaved ? 'fill-white text-white scale-110' : ''}`} />
+            )}
+          </button>
+        )}
 
         {/* Rating Floating Badge */}
         {totalRatings > 0 && (
@@ -137,7 +167,7 @@ const StoreCard = ({ store, onRate, onViewStore }) => {
             )}
           </div>
 
-          {/* User's Rating Status Tag (if authenticated rating data is present) */}
+          {/* User's Rating Status Tag */}
           {userRating !== undefined && (
             <div className="text-xs flex items-center justify-between text-[#171A18] bg-[#F7F6F1] px-3.5 py-2 rounded-xl border border-[#E2E5DF]">
               <span className="text-[10px] uppercase tracking-wider font-bold text-[#707873]">Your Rating</span>
@@ -183,4 +213,3 @@ const StoreCard = ({ store, onRate, onViewStore }) => {
 };
 
 export default StoreCard;
-

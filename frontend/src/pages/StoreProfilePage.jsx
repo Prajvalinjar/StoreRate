@@ -1,110 +1,93 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getPublicStoreById } from '../api/publicService';
-import { submitRating, updateRating, getMyRatings } from '../api/userStoreService';
+import { submitRating, updateRating, addFavorite, removeFavorite, getUserFavoriteStoreIds } from '../api/userStoreService';
 import StarRating from '../components/StarRating';
 import SafeImage from '../components/SafeImage';
-import {
-  MapPin,
-  Star,
-  ArrowLeft,
-  Store,
-  RefreshCw,
-  AlertCircle,
-  Calendar,
-  X,
-  CheckCircle2,
-  Edit3,
-  LogIn,
-  ShieldAlert,
-  Sparkles,
+import SkeletonLoader from '../components/SkeletonLoader';
+import { 
+  Star, MapPin, ArrowLeft, CheckCircle2, ShieldAlert, Award, 
+  LogIn, UserCheck, Sparkles, RefreshCw, AlertCircle, Calendar, Heart 
 } from 'lucide-react';
 
 const StoreProfilePage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const [store, setStore] = useState(null);
+  const [userRating, setUserRating] = useState(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savingFavorite, setSavingFavorite] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Authenticated user rating state
-  const [userRating, setUserRating] = useState(null);
-
-  // Modals & form state
+  // Rating Modal state
   const [rateModalOpen, setRateModalOpen] = useState(false);
-  const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const [selectedRating, setSelectedRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
   const [modalSuccess, setModalSuccess] = useState('');
 
-  // Fetch public store profile details
-  const fetchStoreDetail = useCallback(async () => {
+  // Sign In Prompt Modal state
+  const [signInPromptOpen, setSignInPromptOpen] = useState(false);
+  const [promptMessage, setPromptMessage] = useState('Sign in to submit a rating');
+
+  const fetchStoreDetail = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const response = await getPublicStoreById(id);
       if (response.status === 'success') {
-        setStore(response.data.store);
+        const storeData = response.data.store;
+        setStore(storeData);
+
+        if (isAuthenticated && user?.role === 'USER') {
+          // Check existing user rating
+          if (storeData.ratings && Array.isArray(storeData.ratings)) {
+            const foundUserRating = storeData.ratings.find(
+              (r) => r.userId === user.id || r.user?.id === user.id
+            );
+            if (foundUserRating) {
+              setUserRating(foundUserRating.rating);
+              setSelectedRating(foundUserRating.rating);
+            }
+          }
+
+          // Check if favorited
+          try {
+            const favRes = await getUserFavoriteStoreIds();
+            if (favRes.status === 'success') {
+              const ids = favRes.data.favoriteStoreIds || [];
+              setIsSaved(ids.includes(id));
+            }
+          } catch {
+            // Ignore favorite check error silently
+          }
+        }
+      } else {
+        setError(response.message || 'Store not found');
       }
     } catch (err) {
-      console.error('Failed to fetch store profile:', err);
-      setError(err.response?.data?.message || 'The requested store profile could not be found.');
+      console.error('Failed to fetch store details:', err);
+      setError(err.response?.data?.message || 'Failed to load store profile.');
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  };
 
-  // Fetch logged-in user's existing rating for this store if role is USER
-  const fetchUserRating = useCallback(async () => {
-    if (isAuthenticated && user?.role === 'USER') {
-      try {
-        const response = await getMyRatings();
-        if (response.status === 'success' && Array.isArray(response.data.ratings)) {
-          const match = response.data.ratings.find((r) => r.store?.id === id);
-          if (match) {
-            setUserRating(match.rating);
-          } else {
-            setUserRating(null);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to check existing user rating:', err);
-      }
+  useEffect(() => {
+    if (id) {
+      fetchStoreDetail();
     }
   }, [id, isAuthenticated, user]);
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetchStoreDetail();
-    fetchUserRating();
-  }, [fetchStoreDetail, fetchUserRating]);
-
-  // Keyboard accessibility for modals
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        setRateModalOpen(false);
-        setSignInPromptOpen(false);
-      }
-    };
-    if (rateModalOpen || signInPromptOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [rateModalOpen, signInPromptOpen]);
-
-  const handleOpenRateAction = () => {
+  const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
+      setPromptMessage('Sign in to save stores to your favorites');
       setSignInPromptOpen(true);
       return;
     }
@@ -113,22 +96,47 @@ const StoreProfilePage = () => {
       return;
     }
 
-    setSelectedRating(userRating || 0);
-    setHoverRating(0);
+    setSavingFavorite(true);
+    try {
+      if (isSaved) {
+        await removeFavorite(id);
+        setIsSaved(false);
+      } else {
+        await addFavorite(id);
+        setIsSaved(true);
+      }
+    } catch (err) {
+      console.error('Failed to toggle favorite:', err);
+    } finally {
+      setSavingFavorite(false);
+    }
+  };
+
+  const handleOpenRateAction = () => {
+    if (!isAuthenticated) {
+      setPromptMessage('Sign in to rate this business and help your community');
+      setSignInPromptOpen(true);
+      return;
+    }
+
+    if (user?.role !== 'USER') {
+      return;
+    }
+
+    setRateModalOpen(true);
     setModalError('');
     setModalSuccess('');
-    setRateModalOpen(true);
+    setSelectedRating(userRating || 0);
   };
 
   const handleCloseRateModal = () => {
     setRateModalOpen(false);
-    setSelectedRating(0);
-    setHoverRating(0);
     setModalError('');
     setModalSuccess('');
+    setHoverRating(0);
   };
 
-  const handleRatingSubmit = async (e) => {
+  const handleSubmitRatingForm = async (e) => {
     e.preventDefault();
     if (!selectedRating || selectedRating < 1 || selectedRating > 5) {
       setModalError('Please select a rating between 1 and 5 stars');
@@ -150,10 +158,7 @@ const StoreProfilePage = () => {
       if (response.status === 'success') {
         setUserRating(selectedRating);
         setModalSuccess('Your rating has been saved successfully!');
-        
-        // Refresh live stats & distribution immediately
         await fetchStoreDetail();
-        
         setTimeout(() => {
           handleCloseRateModal();
         }, 800);
@@ -181,18 +186,8 @@ const StoreProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F7F6F1] py-12 px-4 sm:px-6 lg:px-8 text-[#171A18]">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="h-4 bg-[#E7F0EB] rounded w-32 animate-pulse" />
-          <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 sm:p-8 space-y-6 animate-pulse">
-            <div className="space-y-3">
-              <div className="h-8 bg-[#E7F0EB] rounded w-2/3" />
-              <div className="h-4 bg-[#E7F0EB] rounded w-1/3" />
-            </div>
-            <div className="h-20 bg-[#E7F0EB] rounded-xl w-full" />
-            <div className="h-48 bg-[#E7F0EB] rounded-xl w-full" />
-          </div>
-        </div>
+      <div className="min-h-screen bg-[#F7F6F1] py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+        <SkeletonLoader type="profile" />
       </div>
     );
   }
@@ -259,23 +254,25 @@ const StoreProfilePage = () => {
     2: { count: 0, percentage: 0 },
     1: { count: 0, percentage: 0 },
   };
-  const recentRatingsList = store.recentRatings || store.ratings || [];
+
+  const recentRatingsList = store.ratings || [];
 
   return (
-    <div className="min-h-screen bg-[#F7F6F1] py-8 px-4 sm:px-6 lg:px-8 text-[#171A18]">
-      <div className="max-w-4xl mx-auto space-y-6 text-left">
-        {/* Navigation Breadcrumb */}
-        <Link
-          to="/stores"
-          className="inline-flex items-center space-x-2 text-xs font-bold text-[#173D32] hover:text-[#2F6654] transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Explore Stores</span>
-        </Link>
+    <div className="min-h-screen bg-[#F7F6F1] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 text-[#171A18] text-left">
+      <div className="max-w-5xl mx-auto space-y-8">
+        {/* Back Button */}
+        <div>
+          <Link
+            to="/stores"
+            className="inline-flex items-center space-x-2 text-xs font-bold text-[#173D32] hover:text-[#2F6654] transition-colors bg-white border border-[#E2E5DF] px-4 py-2 rounded-xl shadow-xs"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Store Discovery</span>
+          </Link>
+        </div>
 
         {/* Main Store Profile Banner */}
         <div className="bg-white border border-[#E2E5DF] rounded-2xl overflow-hidden shadow-xs p-6 sm:p-8 space-y-6">
-          {/* Store Cover Header Image */}
           <div className="relative h-56 sm:h-64 w-full bg-[#173D32] overflow-hidden -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-6">
             <SafeImage
               src={store.imageUrl || 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80'}
@@ -309,8 +306,26 @@ const StoreProfilePage = () => {
               </p>
             </div>
 
-            {/* Primary Action Button / Status Badge */}
-            <div className="shrink-0 self-start md:self-auto">
+            {/* Action Buttons: Save & Rate */}
+            <div className="flex flex-wrap items-center gap-3 shrink-0 self-start md:self-auto">
+              <button
+                type="button"
+                onClick={handleToggleFavorite}
+                disabled={savingFavorite}
+                className={`px-5 py-3 text-xs font-extrabold rounded-xl transition-all shadow-xs flex items-center space-x-2 cursor-pointer border ${
+                  isSaved
+                    ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-600'
+                    : 'bg-white hover:bg-[#F7F6F1] text-[#173D32] border-[#E2E5DF]'
+                }`}
+              >
+                {savingFavorite ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Heart className={`w-4 h-4 ${isSaved ? 'fill-white text-white' : 'text-[#C9A24A]'}`} />
+                )}
+                <span>{isSaved ? '♥ Saved Store' : '♡ Save Store'}</span>
+              </button>
+
               {!isAuthenticated ? (
                 <button
                   onClick={handleOpenRateAction}
@@ -328,139 +343,123 @@ const StoreProfilePage = () => {
                       : 'bg-[#173D32] hover:bg-[#2F6654] text-white'
                   }`}
                 >
-                  <Edit3 className="w-4 h-4 text-[#C9A24A]" />
-                  <span>
-                    {userRating ? `Your Rating: ${userRating}.0 ★ (Update)` : 'Rate This Store'}
-                  </span>
+                  <Star className="w-4 h-4 text-[#C9A24A] fill-[#C9A24A]" />
+                  <span>{userRating ? `Your Rating (${userRating}.0 ★)` : 'Rate Business'}</span>
                 </button>
-              ) : (
-                <div className="px-4 py-2 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl text-xs text-[#707873] font-medium">
-                  Logged in as <span className="font-bold text-[#171A18]">{user.role}</span>
-                </div>
-              )}
+              ) : null}
             </div>
           </div>
 
-          {/* Rating Overview Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Average Rating Score Card */}
-            <div className="bg-[#F7F6F1] border border-[#E2E5DF] rounded-2xl p-6 flex flex-col justify-between space-y-3 text-center md:text-left">
-              <span className="text-[10px] font-extrabold text-[#707873] uppercase tracking-wider">
-                COMMUNITY REPUTATION
-              </span>
-              <div className="space-y-2">
-                <div className="flex items-baseline space-x-2 justify-center md:justify-start">
-                  <span className="font-display text-4xl sm:text-5xl font-black text-[#171A18]">
-                    {averageRatingNum > 0 ? averageRatingNum.toFixed(1) : '0.0'}
-                  </span>
+          {/* Rating Telemetry Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+            <div className="p-6 bg-[#F7F6F1] border border-[#E2E5DF] rounded-2xl flex flex-col justify-between space-y-3">
+              <div className="space-y-1">
+                <span className="text-[10px] font-extrabold text-[#707873] uppercase tracking-wider block">
+                  AVERAGE REPUTATION SCORE
+                </span>
+                <div className="flex items-baseline space-x-2">
+                  <span className="text-4xl font-black text-[#173D32]">{averageRatingNum.toFixed(1)}</span>
                   <span className="text-sm font-bold text-[#707873]">/ 5.0</span>
                 </div>
-                <div className="flex justify-center md:justify-start">
-                  <StarRating value={averageRatingNum} readOnly size="md" />
-                </div>
               </div>
-              <p className="text-xs text-[#707873]">
-                Based on <span className="font-bold text-[#171A18]">{totalRatingsCount}</span> customer ratings
-              </p>
+              <div className="space-y-1.5 pt-2">
+                <StarRating value={averageRatingNum} readOnly size="md" />
+                <p className="text-xs text-[#707873] font-normal">
+                  Based on {totalRatingsCount} {totalRatingsCount === 1 ? 'verified review' : 'verified reviews'}
+                </p>
+              </div>
             </div>
 
-            {/* Rating Distribution Breakdown */}
-            <div className="md:col-span-2 bg-[#F7F6F1] border border-[#E2E5DF] rounded-2xl p-6 space-y-3">
+            {/* Distribution Breakdown (5★–1★) */}
+            <div className="md:col-span-2 p-6 bg-[#F7F6F1] border border-[#E2E5DF] rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-extrabold text-[#707873] uppercase tracking-wider">
                   RATING DISTRIBUTION
                 </span>
-                <span className="text-[11px] font-mono font-bold text-[#173D32]">
-                  {totalRatingsCount} TOTAL
-                </span>
+                <span className="text-[11px] font-bold text-[#173D32]">1.0 – 5.0 Scale</span>
               </div>
 
-              <div className="space-y-2 pt-1">
+              <div className="space-y-2">
                 {[5, 4, 3, 2, 1].map((star) => {
                   const item = distribution[star] || { count: 0, percentage: 0 };
                   return (
-                    <div key={star} className="flex items-center space-x-3 text-xs font-semibold">
-                      <div className="w-8 flex items-center space-x-1 shrink-0 text-[#171A18]">
-                        <span>{star}</span>
-                        <Star className="w-3 h-3 text-[#C9A24A] fill-[#C9A24A]" />
-                      </div>
-                      <div className="flex-1 h-3 bg-white border border-[#E2E5DF] rounded-full overflow-hidden">
+                    <div key={star} className="flex items-center space-x-3 text-xs">
+                      <span className="w-8 font-bold text-[#171A18] text-right font-mono">{star} ★</span>
+                      <div className="flex-1 h-2.5 bg-[#E2E5DF] rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-[#C9A24A] to-[#173D32] rounded-full transition-all duration-500"
+                          className="h-full bg-[#173D32] rounded-full transition-all duration-300"
                           style={{ width: `${item.percentage}%` }}
                         />
                       </div>
-                      <div className="w-16 text-right font-mono text-[11px] text-[#707873] shrink-0">
-                        <span>{item.percentage}%</span>
-                        <span className="text-[10px] text-[#9CA59E] ml-1">({item.count})</span>
-                      </div>
+                      <span className="w-12 text-[#707873] font-mono text-right">{item.percentage}%</span>
                     </div>
                   );
                 })}
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Customer Ratings Activity Feed */}
-          <div className="space-y-4 pt-4 border-t border-[#E2E5DF]">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display text-base font-bold text-[#171A18] tracking-tight uppercase">
-                Customer Ratings
-              </h3>
-              <span className="text-xs text-[#707873] font-medium">Verified submissions</span>
+        {/* Customer Reviews Section */}
+        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
+          <div className="flex items-center justify-between border-b border-[#E2E5DF] pb-4">
+            <div>
+              <h3 className="font-display text-xl font-bold text-[#171A18]">Customer Reviews & Ratings</h3>
+              <p className="text-xs text-[#707873]">Feedback from verified community accounts</p>
             </div>
+            <span className="text-xs text-[#707873] font-medium">Verified submissions</span>
+          </div>
 
-            {recentRatingsList.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {recentRatingsList.map((r, idx) => (
-                  <div key={r.id || idx} className="p-4 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl space-y-2">
-                    <div className="flex items-center justify-between">
-                      <StarRating value={r.rating} readOnly size="xs" />
-                      <span className="text-[11px] font-bold text-[#173D32] bg-[#E7F0EB] px-2.5 py-0.5 rounded-full border border-[#CDE0D5]">
-                        {r.rating}.0 / 5.0
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] text-[#707873] pt-1">
-                      <span className="font-semibold text-[#171A18] truncate max-w-[140px]" title={r.user?.name}>
-                        {r.user?.name ? r.user.name : 'Community rating'}
-                      </span>
-                      <div className="flex items-center space-x-2">
-                        {r.user?.email?.endsWith('@storerate.local') ? (
-                          <span className="text-[9px] font-bold text-[#9A7525] bg-[#F5E6C8]/60 px-2 py-0.5 rounded border border-[#E8D4A8]">
-                            Sample rating
-                          </span>
-                        ) : (
-                          <span className="text-[9px] font-bold text-[#173D32] bg-[#E7F0EB] px-2 py-0.5 rounded border border-[#CDE0D5]">
-                            Customer rating
-                          </span>
-                        )}
-                        <span className="flex items-center space-x-1 font-mono text-[10px]">
-                          <Calendar className="w-3 h-3 text-[#9CA59E]" />
-                          <span>{new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+          {recentRatingsList.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {recentRatingsList.map((r, idx) => (
+                <div key={r.id || idx} className="p-4 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <StarRating value={r.rating} readOnly size="xs" />
+                    <span className="text-[11px] font-bold text-[#173D32] bg-[#E7F0EB] px-2.5 py-0.5 rounded-full border border-[#CDE0D5]">
+                      {r.rating}.0 / 5.0
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-[#707873] pt-1">
+                    <span className="font-semibold text-[#171A18] truncate max-w-[140px]" title={r.user?.name}>
+                      {r.user?.name ? r.user.name : 'Community rating'}
+                    </span>
+                    <div className="flex items-center space-x-2">
+                      {r.user?.email?.endsWith('@storerate.local') ? (
+                        <span className="text-[9px] font-bold text-[#9A7525] bg-[#F5E6C8]/60 px-2 py-0.5 rounded border border-[#E8D4A8]">
+                          Sample rating
                         </span>
-                      </div>
+                      ) : (
+                        <span className="text-[9px] font-bold text-[#173D32] bg-[#E7F0EB] px-2 py-0.5 rounded border border-[#CDE0D5]">
+                          Customer rating
+                        </span>
+                      )}
+                      <span className="flex items-center space-x-1 font-mono text-[10px]">
+                        <Calendar className="w-3 h-3 text-[#9CA59E]" />
+                        <span>{new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                      </span>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="p-8 bg-[#F7F6F1] border border-[#E2E5DF] rounded-2xl text-center space-y-2">
-                <Sparkles className="w-6 h-6 text-[#C9A24A] mx-auto" />
-                <h4 className="font-bold text-sm text-[#171A18]">No ratings yet</h4>
-                <p className="text-xs text-[#707873] max-w-xs mx-auto">
-                  Be the first customer to rate {store.name} and share your feedback with the community.
-                </p>
-                {(!isAuthenticated || user?.role === 'USER') && (
-                  <button
-                    onClick={handleOpenRateAction}
-                    className="inline-flex items-center space-x-1.5 text-xs font-bold text-[#173D32] hover:underline pt-1"
-                  >
-                    <span>Rate this store now →</span>
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 bg-[#F7F6F1] border border-[#E2E5DF] rounded-2xl text-center space-y-2">
+              <Sparkles className="w-6 h-6 text-[#C9A24A] mx-auto" />
+              <h4 className="font-bold text-sm text-[#171A18]">No ratings yet</h4>
+              <p className="text-xs text-[#707873] max-w-xs mx-auto">
+                Be the first customer to rate {store.name} and share your feedback with the community.
+              </p>
+              {(!isAuthenticated || user?.role === 'USER') && (
+                <button
+                  onClick={handleOpenRateAction}
+                  className="inline-flex items-center space-x-1.5 text-xs font-bold text-[#173D32] hover:underline pt-1"
+                >
+                  <span>Rate this store now →</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -479,48 +478,35 @@ const StoreProfilePage = () => {
                 <h3 className="font-display text-xl font-bold text-[#171A18] line-clamp-1">{store.name}</h3>
                 <p className="text-xs text-[#707873] truncate">{store.address}</p>
               </div>
-              <button
-                onClick={handleCloseRateModal}
-                className="text-[#707873] hover:text-[#171A18] p-1 rounded-lg hover:bg-[#F7F6F1] transition-colors"
-                aria-label="Close modal"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
 
             {modalError && (
-              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center space-x-2 text-[#9B2C2C] text-xs">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>{modalError}</span>
+              <div className="p-3 bg-rose-50 border border-rose-200 text-[#9B2C2C] text-xs font-semibold rounded-xl">
+                {modalError}
               </div>
             )}
-
             {modalSuccess && (
-              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center space-x-2 text-[#173D32] text-xs">
-                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-xl flex items-center space-x-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>{modalSuccess}</span>
               </div>
             )}
 
-            <form onSubmit={handleRatingSubmit} className="space-y-5 text-center">
-              <div className="space-y-3 py-4 bg-[#F7F6F1] p-5 rounded-2xl border border-[#E2E5DF]">
-                <p className="text-[11px] font-bold text-[#707873] uppercase tracking-wider">
-                  {currentDisplayRating > 0
-                    ? `Selected rating: ${currentDisplayRating}.0`
-                    : 'Select rating (1 to 5 stars)'}
-                </p>
-
-                <div className="flex justify-center py-1">
+            <form onSubmit={handleSubmitRatingForm} className="space-y-5">
+              <div className="space-y-3 py-2 text-center">
+                <label className="block text-xs font-bold text-[#171A18]">
+                  Select your overall rating score:
+                </label>
+                <div className="flex justify-center">
                   <StarRating
-                    value={selectedRating}
-                    onChange={setSelectedRating}
-                    onHover={setHoverRating}
-                    size="xl"
+                    value={currentDisplayRating}
+                    onChange={(val) => setSelectedRating(val)}
+                    onHover={(val) => setHoverRating(val)}
+                    size="lg"
                   />
                 </div>
-
-                <div className="min-h-[1.5rem] flex items-center justify-center">
-                  <span className="text-xs font-bold text-[#C9A24A] uppercase tracking-wider bg-[#F5E6C8]/60 border border-[#E8D4A8] px-3.5 py-1 rounded-full">
+                <div className="h-6 flex items-center justify-center">
+                  <span className="text-xs font-bold text-[#9A7525] bg-[#F5E6C8] border border-[#E8D4A8] px-3.5 py-1 rounded-full">
                     {currentDisplayRating > 0
                       ? `${currentDisplayRating} ${currentDisplayRating === 1 ? 'Star' : 'Stars'} — ${getRatingLabel(currentDisplayRating)}`
                       : 'Hover or click a star to rate'}
@@ -562,38 +548,30 @@ const StoreProfilePage = () => {
                   <LogIn className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-display text-lg font-bold text-[#171A18]">Sign in to rate</h3>
-                  <p className="text-xs text-[#707873]">Authentication required</p>
+                  <h3 className="font-display text-lg font-bold text-[#171A18]">Sign in required</h3>
+                  <p className="text-xs text-[#707873]">{promptMessage}</p>
                 </div>
               </div>
-              <button
-                onClick={() => setSignInPromptOpen(false)}
-                className="text-[#707873] hover:text-[#171A18] p-1 rounded-lg hover:bg-[#F7F6F1] transition-colors"
-                aria-label="Close modal"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
 
-            <p className="text-xs text-[#707873] leading-relaxed font-normal">
-              Sign in to your StoreRate account to rate <span className="font-bold text-[#171A18]">{store.name}</span> and contribute to community reputation.
+            <p className="text-xs text-[#707873] leading-relaxed">
+              Create a free account or sign in to save stores to your favorites list and contribute authentic ratings.
             </p>
 
-            <div className="flex items-center justify-end space-x-3 pt-2 border-t border-[#E2E5DF]">
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-2.5 pt-2 border-t border-[#E2E5DF]">
               <button
                 type="button"
                 onClick={() => setSignInPromptOpen(false)}
-                className="px-4 py-2.5 bg-white text-[#707873] border border-[#E2E5DF] rounded-xl text-xs font-semibold hover:bg-[#F7F6F1] transition-colors"
+                className="w-full sm:w-auto px-4 py-2.5 bg-white text-[#707873] border border-[#E2E5DF] rounded-xl text-xs font-semibold hover:bg-[#F7F6F1] transition-colors"
               >
                 Continue Browsing
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/login')}
-                className="px-6 py-2.5 bg-[#173D32] hover:bg-[#2F6654] text-white font-extrabold rounded-xl text-xs transition-colors shadow-xs cursor-pointer flex items-center space-x-1.5"
+                onClick={() => navigate('/login', { state: { from: { pathname: `/stores/${id}` } } })}
+                className="w-full sm:w-auto px-6 py-2.5 bg-[#173D32] hover:bg-[#2F6654] text-white font-extrabold rounded-xl text-xs transition-colors shadow-xs"
               >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Sign In</span>
+                Sign In Now →
               </button>
             </div>
           </div>
