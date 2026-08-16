@@ -1,7 +1,7 @@
 const express = require('express');
 const { requireAuth } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
-const { getDashboard } = require('../controllers/ownerController');
+const { getDashboard, addStore } = require('../controllers/ownerController');
 
 const router = express.Router();
 
@@ -9,5 +9,6 @@ const router = express.Router();
 router.use(requireAuth, requireRole('STORE_OWNER'));
 
 router.get('/dashboard', getDashboard);
+router.post('/stores', addStore);
 
 module.exports = router;

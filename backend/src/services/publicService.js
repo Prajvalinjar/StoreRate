@@ -6,10 +6,15 @@ const prisma = require('../utils/prisma');
  */
 const getPublicStats = async () => {
   const [businesses, ratings, users, avgResult] = await Promise.all([
-    prisma.store.count(),
-    prisma.rating.count(),
+    prisma.store.count({
+      where: { status: 'APPROVED' },
+    }),
+    prisma.rating.count({
+      where: { store: { status: 'APPROVED' } },
+    }),
     prisma.user.count(),
     prisma.rating.aggregate({
+      where: { store: { status: 'APPROVED' } },
       _avg: { rating: true },
     }),
   ]);
@@ -30,18 +35,26 @@ const getPublicStats = async () => {
 
 /**
  * Retrieves public store listings with optional search (q) and pagination.
+ * Only APPROVED stores are returned publicly.
  */
 const getPublicStores = async ({ q, page = 1, limit = 12 } = {}) => {
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 12));
   const skip = (pageNum - 1) * limitNum;
 
-  const where = {};
+  const where = {
+    status: 'APPROVED',
+  };
+
   if (q && q.trim()) {
     const searchTerm = q.trim();
-    where.OR = [
-      { name: { contains: searchTerm, mode: 'insensitive' } },
-      { address: { contains: searchTerm, mode: 'insensitive' } },
+    where.AND = [
+      {
+        OR: [
+          { name: { contains: searchTerm, mode: 'insensitive' } },
+          { address: { contains: searchTerm, mode: 'insensitive' } },
+        ],
+      },
     ];
   }
 
@@ -57,6 +70,7 @@ const getPublicStores = async ({ q, page = 1, limit = 12 } = {}) => {
         name: true,
         email: true,
         address: true,
+        status: true,
         createdAt: true,
         ratings: {
           select: {
@@ -103,6 +117,8 @@ const getPublicStoreById = async (id) => {
       name: true,
       email: true,
       address: true,
+      status: true,
+      rejectionReason: true,
       createdAt: true,
       ratings: {
         select: {

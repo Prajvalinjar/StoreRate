@@ -8,13 +8,19 @@ class UserStoreError extends Error {
 }
 
 const getStoresForUser = async (userId, { name, address, q }) => {
-  const where = {};
+  const where = {
+    status: 'APPROVED',
+  };
 
   if (q && q.trim()) {
     const searchTerm = q.trim();
-    where.OR = [
-      { name: { contains: searchTerm, mode: 'insensitive' } },
-      { address: { contains: searchTerm, mode: 'insensitive' } },
+    where.AND = [
+      {
+        OR: [
+          { name: { contains: searchTerm, mode: 'insensitive' } },
+          { address: { contains: searchTerm, mode: 'insensitive' } },
+        ],
+      },
     ];
   } else {
     if (name && name.trim()) {
@@ -72,6 +78,10 @@ const submitRating = async (userId, storeId, rating) => {
     throw new UserStoreError('Store not found', 404);
   }
 
+  if (store.status !== 'APPROVED') {
+    throw new UserStoreError('Store is not currently available for ratings', 403);
+  }
+
   const existingRating = await prisma.rating.findUnique({
     where: {
       userId_storeId: {
@@ -103,6 +113,10 @@ const updateRating = async (userId, storeId, rating) => {
 
   if (!store) {
     throw new UserStoreError('Store not found', 404);
+  }
+
+  if (store.status !== 'APPROVED') {
+    throw new UserStoreError('Store is not currently available for ratings', 403);
   }
 
   const existingRating = await prisma.rating.findUnique({

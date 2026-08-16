@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getOwnerDashboard } from '../api/ownerService';
+import { getOwnerDashboard, createOwnerStore } from '../api/ownerService';
 import StarRating from '../components/StarRating';
-import { Store, Star, Users, MapPin, Mail, AlertCircle, RefreshCw, Award, TrendingUp, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Store, Star, Users, MapPin, Mail, AlertCircle, RefreshCw, Award, TrendingUp, Sparkles, CheckCircle2, Clock, XCircle, Send } from 'lucide-react';
 
 const OwnerDashboardPage = () => {
   const [storeData, setStoreData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Form state for creating a store
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [formSuccess, setFormSuccess] = useState('');
 
   const fetchDashboard = async () => {
     setLoading(true);
@@ -28,6 +36,35 @@ const OwnerDashboardPage = () => {
   useEffect(() => {
     fetchDashboard();
   }, []);
+
+  const handleCreateStore = async (e) => {
+    e.preventDefault();
+    if (!name.trim() || !email.trim() || !address.trim()) {
+      setFormError('Please fill out store name, business email, and address.');
+      return;
+    }
+
+    setSubmitting(true);
+    setFormError('');
+    setFormSuccess('');
+
+    try {
+      const response = await createOwnerStore({
+        name: name.trim(),
+        email: email.trim(),
+        address: address.trim(),
+      });
+
+      if (response.status === 'success') {
+        setFormSuccess('Store listing submitted successfully! Awaiting administrator approval.');
+        await fetchDashboard();
+      }
+    } catch (err) {
+      setFormError(err.response?.data?.message || 'Failed to submit store listing. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -72,15 +109,88 @@ const OwnerDashboardPage = () => {
 
   if (!storeData) {
     return (
-      <div className="max-w-4xl mx-auto p-6 space-y-6 text-left">
-        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-12 text-center space-y-3 shadow-xs">
-          <div className="w-12 h-12 bg-[#E7F0EB] text-[#173D32] rounded-2xl flex items-center justify-center mx-auto border border-[#CDE0D5]">
-            <Store className="w-6 h-6" />
+      <div className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 text-left">
+        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
+          <div className="space-y-2 border-b border-[#E2E5DF] pb-5">
+            <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block border border-[#CDE0D5]">
+              STORE REGISTRATION WORKFLOW
+            </span>
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#171A18] tracking-tight">
+              Submit Your Store Listing
+            </h2>
+            <p className="text-xs sm:text-sm text-[#707873]">
+              Register your business details below. Store listings undergo administrator review before becoming publicly visible on StoreRate.
+            </p>
           </div>
-          <h2 className="font-display text-lg font-bold text-[#171A18]">NO STORE ASSIGNED</h2>
-          <p className="text-xs text-[#707873] max-w-md mx-auto font-normal">
-            Your account does not currently have a store assigned to manage.
-          </p>
+
+          {formError && (
+            <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-[#9B2C2C] text-xs flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+
+          {formSuccess && (
+            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-[#173D32] text-xs flex items-center space-x-2">
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+              <span>{formSuccess}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleCreateStore} className="space-y-4">
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-[#171A18] uppercase tracking-wider">
+                Store / Business Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Apex Electronics & Appliances"
+                className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32] focus:ring-1 focus:ring-[#173D32]/20"
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-[#171A18] uppercase tracking-wider">
+                Business Contact Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="contact@apexelectronics.com"
+                className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32] focus:ring-1 focus:ring-[#173D32]/20"
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-[#171A18] uppercase tracking-wider">
+                Store Location / Address
+              </label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Commercial Street, Pune, Maharashtra"
+                className="w-full bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[#171A18] placeholder-[#9CA59E] focus:outline-none focus:border-[#173D32] focus:ring-1 focus:ring-[#173D32]/20"
+                required
+              />
+            </div>
+
+            <div className="pt-3 border-t border-[#E2E5DF]">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3 bg-[#173D32] hover:bg-[#2F6654] text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-2 disabled:opacity-40 cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+                <span>{submitting ? 'Submitting...' : 'Submit Store for Approval'}</span>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     );
@@ -105,6 +215,49 @@ const OwnerDashboardPage = () => {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 text-[#171A18] text-left">
+      {/* Approval Status Banner */}
+      {storeData.status === 'PENDING' && (
+        <div className="p-5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start space-x-3 text-amber-900 shadow-xs">
+          <Clock className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+          <div className="space-y-1 text-xs">
+            <span className="font-extrabold uppercase tracking-wider text-[10px] bg-amber-200/80 px-2.5 py-0.5 rounded-md inline-block text-amber-900">
+              🟡 Pending Approval
+            </span>
+            <h3 className="font-bold text-sm text-amber-950">Store Listing Awaiting Administrator Review</h3>
+            <p className="text-amber-800">
+              Your store has been submitted and is currently waiting for administrator approval. Once approved, your listing will become publicly searchable on StoreRate.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {storeData.status === 'APPROVED' && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center space-x-3 text-[#173D32] shadow-xs">
+          <CheckCircle2 className="w-5 h-5 text-[#173D32] shrink-0" />
+          <div className="text-xs">
+            <span className="font-extrabold uppercase tracking-wider text-[10px] bg-[#E7F0EB] px-2.5 py-0.5 rounded-md inline-block text-[#173D32]">
+              🟢 Approved & Live
+            </span>
+            <span className="ml-2 font-medium">Your store is publicly listed on StoreRate and open for ratings.</span>
+          </div>
+        </div>
+      )}
+
+      {storeData.status === 'REJECTED' && (
+        <div className="p-5 bg-rose-50 border border-rose-200 rounded-2xl flex items-start space-x-3 text-[#9B2C2C] shadow-xs">
+          <XCircle className="w-5 h-5 text-rose-700 shrink-0 mt-0.5" />
+          <div className="space-y-1 text-xs">
+            <span className="font-extrabold uppercase tracking-wider text-[10px] bg-rose-200/80 px-2.5 py-0.5 rounded-md inline-block text-rose-900">
+              🔴 Listing Rejected
+            </span>
+            <h3 className="font-bold text-sm text-rose-950">Store Listing Not Approved</h3>
+            <p className="text-rose-800">
+              Your store listing was not approved. {storeData.rejectionReason && <strong>Reason: {storeData.rejectionReason}</strong>}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* 1. Store Identity Header */}
       <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 sm:p-8 shadow-xs space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E2E5DF] pb-5">

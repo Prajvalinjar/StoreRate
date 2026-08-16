@@ -34,3 +34,18 @@ export const createStore = async (storeData) => {
   const response = await axiosInstance.post('/admin/stores', storeData);
   return response.data;
 };
+
+export const getPendingStores = async () => {
+  const response = await axiosInstance.get('/admin/stores/pending');
+  return response.data;
+};
+
+export const approveStore = async (storeId) => {
+  const response = await axiosInstance.put(`/admin/stores/${storeId}/approve`);
+  return response.data;
+};
+
+export const rejectStore = async (storeId, reason) => {
+  const response = await axiosInstance.put(`/admin/stores/${storeId}/reject`, { reason });
+  return response.data;
+};

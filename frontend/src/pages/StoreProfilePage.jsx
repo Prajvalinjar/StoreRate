@@ -221,6 +221,34 @@ const StoreProfilePage = () => {
     );
   }
 
+  if (store.status && store.status !== 'APPROVED') {
+    const isPending = store.status === 'PENDING';
+    return (
+      <div className="min-h-screen bg-[#F7F6F1] py-16 px-4">
+        <div className="max-w-md mx-auto bg-white border border-[#E2E5DF] rounded-2xl p-8 text-center space-y-4 shadow-xs">
+          <div className="w-12 h-12 bg-amber-50 text-amber-800 rounded-2xl flex items-center justify-center mx-auto border border-amber-200">
+            <ShieldAlert className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="font-display text-lg font-bold text-[#171A18]">Store Not Available</h3>
+            <p className="text-xs text-[#707873] font-normal">
+              {isPending
+                ? 'This store is currently awaiting administrator approval.'
+                : 'This store is not currently listed on StoreRate.'}
+            </p>
+          </div>
+          <Link
+            to="/stores"
+            className="inline-flex items-center space-x-2 px-5 py-2.5 bg-[#173D32] text-white text-xs font-extrabold rounded-xl hover:bg-[#2F6654] transition-colors shadow-xs"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Explore Stores</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const averageRatingNum = Number(store.averageRating || store.stats?.averageRating || 0);
   const totalRatingsCount = Number(store.totalRatings || store.stats?.totalRatings || 0);
   const distribution = store.distribution || {

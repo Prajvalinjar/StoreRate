@@ -150,6 +150,59 @@ const addStore = async (req, res, next) => {
   }
 };
 
+const listPendingStores = async (req, res, next) => {
+  try {
+    const result = await adminService.getPendingStores();
+    return res.status(200).json({
+      status: 'success',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const approveStore = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const store = await adminService.approveStore(id);
+    return res.status(200).json({
+      status: 'success',
+      message: 'Store approved and published successfully.',
+      data: { store },
+    });
+  } catch (error) {
+    if (error instanceof adminService.AdminError) {
+      return res.status(error.statusCode).json({
+        status: 'error',
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+const rejectStore = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body || {};
+    const store = await adminService.rejectStore(id, reason);
+    return res.status(200).json({
+      status: 'success',
+      message: 'Store listing rejected.',
+      data: { store },
+    });
+  } catch (error) {
+    if (error instanceof adminService.AdminError) {
+      return res.status(error.statusCode).json({
+        status: 'error',
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboard,
   listUsers,
@@ -158,4 +211,7 @@ module.exports = {
   listStores,
   getStore,
   addStore,
+  listPendingStores,
+  approveStore,
+  rejectStore,
 };

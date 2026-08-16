@@ -13,6 +13,12 @@ enum Role {
   STORE_OWNER
 }
 
+enum StoreStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -30,14 +36,16 @@ model User {
 }
 
 model Store {
-  id        String   @id @default(uuid())
-  name      String
-  email     String
-  address   String
-  ownerId   String
-  owner     User     @relation("StoreOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String      @id @default(uuid())
+  name            String
+  email           String
+  address         String
+  status          StoreStatus @default(APPROVED)
+  rejectionReason String?
+  ownerId         String
+  owner           User        @relation("StoreOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   ratings Rating[]
 

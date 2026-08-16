@@ -9,6 +9,9 @@ const {
   listStores,
   getStore,
   addStore,
+  listPendingStores,
+  approveStore,
+  rejectStore,
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -20,6 +23,11 @@ router.get('/dashboard', getDashboard);
 router.get('/users', listUsers);
 router.post('/users', addUser);
 router.get('/users/:id', getUser);
+
+// Store Approval Workflow & Management Routes
+router.get('/stores/pending', listPendingStores);
+router.put('/stores/:id/approve', approveStore);
+router.put('/stores/:id/reject', rejectStore);
 router.get('/stores', listStores);
 router.post('/stores', addStore);
 router.get('/stores/:id', getStore);

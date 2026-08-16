@@ -15,15 +15,17 @@ const sanitizeUser = (user) => {
 };
 
 const getDashboardMetrics = async () => {
-  const [totalUsers, totalStores, totalRatings, userRoles, storePerformance] = await Promise.all([
+  const [totalUsers, totalStores, totalRatings, pendingStoresCount, userRoles, storePerformance] = await Promise.all([
     prisma.user.count(),
-    prisma.store.count(),
+    prisma.store.count({ where: { status: 'APPROVED' } }),
     prisma.rating.count(),
+    prisma.store.count({ where: { status: 'PENDING' } }),
     prisma.user.groupBy({
       by: ['role'],
       _count: { role: true },
     }),
     prisma.store.findMany({
+      where: { status: 'APPROVED' },
       select: {
         id: true,
         name: true,
@@ -58,9 +60,74 @@ const getDashboardMetrics = async () => {
     totalUsers,
     totalStores,
     totalRatings,
+    pendingStoresCount,
     roleDistribution,
     storePerformance: storesWithPerformance,
   };
+};
+
+const getPendingStores = async () => {
+  const stores = await prisma.store.findMany({
+    where: { status: 'PENDING' },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      owner: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+  });
+
+  return { stores };
+};
+
+const approveStore = async (storeId) => {
+  const store = await prisma.store.findUnique({
+    where: { id: storeId },
+  });
+
+  if (!store) {
+    throw new AdminError('Store not found', 404);
+  }
+
+  const updatedStore = await prisma.store.update({
+    where: { id: storeId },
+    data: {
+      status: 'APPROVED',
+      rejectionReason: null,
+    },
+    include: {
+      owner: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+  });
+
+  return updatedStore;
+};
+
+const rejectStore = async (storeId, reason) => {
+  const store = await prisma.store.findUnique({
+    where: { id: storeId },
+  });
+
+  if (!store) {
+    throw new AdminError('Store not found', 404);
+  }
+
+  const updatedStore = await prisma.store.update({
+    where: { id: storeId },
+    data: {
+      status: 'REJECTED',
+      rejectionReason: reason || 'Business information could not be verified.',
+    },
+    include: {
+      owner: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+  });
+
+  return updatedStore;
 };
 
 const getUsers = async ({ name, email, address, role, sortBy = 'createdAt', sortOrder = 'desc', page = 1, limit = 10 }) => {
@@ -331,4 +398,7 @@ module.exports = {
   getStores,
   getStoreById,
   createStore,
+  getPendingStores,
+  approveStore,
+  rejectStore,
 };
