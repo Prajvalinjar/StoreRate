@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getPublicStoreById } from '../api/publicService';
 import { submitRating, updateRating, getMyRatings } from '../api/userStoreService';
 import StarRating from '../components/StarRating';
+import SafeImage from '../components/SafeImage';
 import {
   MapPin,
   Star,
