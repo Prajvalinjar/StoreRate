@@ -75,7 +75,7 @@ const getOwnerDashboard = async (ownerId) => {
       name: store.name,
       email: store.email,
       address: store.address,
-      city: store.city || 'Kolhapur',
+      city: store.city ? store.city.trim() : null,
       phone: store.phone,
       category: store.category || 'General',
       description: store.description,
@@ -107,7 +107,7 @@ const createOwnerStore = async (ownerId, { name, email, address, category, city,
       name,
       email: email.toLowerCase(),
       address,
-      city: city && city.trim() ? city.trim() : 'Kolhapur',
+      city: city && city.trim() ? city.trim() : null,
       phone: phone && phone.trim() ? phone.trim() : null,
       category: storeCategory,
       description: description && description.trim() ? description.trim() : null,
@@ -159,7 +159,7 @@ const updateOwnerStore = async (ownerId, storeId, updateData) => {
   if (category && category.trim()) dataToUpdate.category = category.trim();
   if (description !== undefined) dataToUpdate.description = description ? description.trim() : null;
   if (address && address.trim()) dataToUpdate.address = address.trim();
-  if (city !== undefined) dataToUpdate.city = city ? city.trim() : 'Kolhapur';
+  if (city !== undefined) dataToUpdate.city = city && city.trim() ? city.trim() : null;
   if (phone !== undefined) dataToUpdate.phone = phone ? phone.trim() : null;
   if (imageUrl !== undefined) dataToUpdate.imageUrl = imageUrl ? imageUrl.trim() : null;
 

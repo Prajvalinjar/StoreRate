@@ -21,7 +21,7 @@ const OwnerStoreDetailsPage = () => {
   const [category, setCategory] = useState('General');
   const [description, setDescription] = useState('');
   const [address, setAddress] = useState('');
-  const [city, setCity] = useState('Kolhapur');
+  const [city, setCity] = useState('');
   const [phone, setPhone] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [saving, setSaving] = useState(false);
@@ -41,7 +41,7 @@ const OwnerStoreDetailsPage = () => {
           setCategory(store.category || 'General');
           setDescription(store.description || '');
           setAddress(store.address || '');
-          setCity(store.city || 'Kolhapur');
+          setCity(store.city || '');
           setPhone(store.phone || '');
           setImageUrl(store.imageUrl || '');
         }
@@ -196,7 +196,7 @@ const OwnerStoreDetailsPage = () => {
               <h1 className="font-display text-3xl font-bold text-[#171A18]">{storeData.name}</h1>
               <p className="text-xs text-[#707873] flex items-center space-x-1.5">
                 <MapPin className="w-3.5 h-3.5 text-[#9CA59E] shrink-0" />
-                <span>{storeData.address}, {storeData.city || 'Kolhapur'}</span>
+                <span>{storeData.address}{storeData.city ? `, ${storeData.city}` : ''}</span>
               </p>
             </div>
 
@@ -381,7 +381,7 @@ const OwnerStoreDetailsPage = () => {
 
                 <div className="p-4 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl space-y-1">
                   <span className="text-[10px] font-extrabold text-[#707873] uppercase tracking-wider block">Location / City</span>
-                  <p className="text-xs font-bold text-[#171A18]">{storeData.city || 'Kolhapur'}</p>
+                  <p className="text-xs font-bold text-[#171A18]">{storeData.city || 'Not specified'}</p>
                 </div>
               </div>
             </div>
