@@ -38,10 +38,10 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     }
 
     if (user.role === 'STORE_OWNER') {
-      if (key === 'overview') return path === '/owner';
+      if (key === 'overview') return path === '/owner' && (!search.includes('tab=') || search.includes('tab=overview'));
       if (key === 'store') return path === '/owner/store';
-      if (key === 'ratings') return path === '/owner/ratings';
-      if (key === 'analytics') return path === '/owner/analytics';
+      if (key === 'ratings') return path === '/owner' && search.includes('tab=ratings');
+      if (key === 'analytics') return path === '/owner' && search.includes('tab=analytics');
       if (key === 'profile') return path === '/owner/profile';
     }
 
@@ -71,8 +71,8 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         return [
           { key: 'overview', label: 'Overview', path: '/owner', icon: LayoutDashboard },
           { key: 'store', label: 'My Store', path: '/owner/store', icon: Store },
-          { key: 'ratings', label: 'Customer Ratings', path: '/owner', icon: Star },
-          { key: 'analytics', label: 'Analytics', path: '/owner', icon: TrendingUp },
+          { key: 'ratings', label: 'Customer Ratings', path: '/owner?tab=ratings', icon: Star },
+          { key: 'analytics', label: 'Analytics', path: '/owner?tab=analytics', icon: TrendingUp },
           { key: 'profile', label: 'My Profile', path: '/owner/profile', icon: UserIcon },
         ];
       case 'ADMIN':

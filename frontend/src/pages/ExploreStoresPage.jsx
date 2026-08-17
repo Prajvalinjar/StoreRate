@@ -5,6 +5,8 @@ import { getPublicStores, getTopRatedStores } from '../api/publicService';
 import { addFavorite, removeFavorite, getUserFavoriteStoreIds } from '../api/userStoreService';
 import { STORE_CATEGORIES } from '../constants/categories';
 import StoreCard from '../components/StoreCard';
+import SafeImage from '../components/SafeImage';
+import { formatStoreLocation } from '../utils/locationUtils';
 import {
   Search,
   Store,
@@ -225,7 +227,7 @@ const ExploreStoresPage = () => {
                       {store.category}
                     </span>
                     <h3 className="font-display font-bold text-base line-clamp-1">{store.name}</h3>
-                    <p className="text-xs text-[#707873] line-clamp-1">{store.address}</p>
+                    <p className="text-xs text-[#707873] line-clamp-1">{formatStoreLocation(store)}</p>
                   </div>
                   <div className="flex items-center justify-between pt-3 border-t border-[#E2E5DF]">
                     <div className="flex items-center space-x-1.5 text-xs font-bold text-[#C9A24A]">

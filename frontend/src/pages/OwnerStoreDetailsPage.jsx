@@ -4,6 +4,7 @@ import { getOwnerDashboard } from '../api/ownerService';
 import axiosInstance from '../api/axiosInstance';
 import SafeImage from '../components/SafeImage';
 import StarRating from '../components/StarRating';
+import { formatStoreLocation } from '../utils/locationUtils';
 import { 
   Store, MapPin, Mail, Calendar, CheckCircle2, Clock, XCircle, 
   ExternalLink, Star, Award, TrendingUp, RefreshCw, AlertCircle, Edit3, Save, Phone, Globe
@@ -196,7 +197,7 @@ const OwnerStoreDetailsPage = () => {
               <h1 className="font-display text-3xl font-bold text-[#171A18]">{storeData.name}</h1>
               <p className="text-xs text-[#707873] flex items-center space-x-1.5">
                 <MapPin className="w-3.5 h-3.5 text-[#9CA59E] shrink-0" />
-                <span>{storeData.address}{storeData.city ? `, ${storeData.city}` : ''}</span>
+                <span>{formatStoreLocation(storeData)}</span>
               </p>
             </div>
 

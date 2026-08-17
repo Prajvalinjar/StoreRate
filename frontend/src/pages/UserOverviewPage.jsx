@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getMyRatings, getStores, getUserFavorites } from '../api/userStoreService';
 import StoreCard from '../components/StoreCard';
+import { formatStoreLocation } from '../utils/locationUtils';
 import { 
   Compass, Star, Heart, CheckCircle2, ArrowRight, Store, MapPin, 
   Sparkles, RefreshCw, Award 
@@ -219,7 +220,7 @@ const UserOverviewPage = () => {
                   <h4 className="font-bold text-sm text-[#171A18] truncate">{item.store.name}</h4>
                   <p className="text-xs text-[#707873] truncate flex items-center space-x-1">
                     <MapPin className="w-3 h-3 text-[#9CA59E] shrink-0" />
-                    <span>{item.store.address}</span>
+                    <span>{formatStoreLocation(item.store)}</span>
                   </p>
                   <div className="flex items-center space-x-1 text-xs font-bold text-[#C9A24A]">
                     <span>Your rating: {item.rating}.0 ★</span>

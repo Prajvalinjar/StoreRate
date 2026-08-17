@@ -5,6 +5,7 @@ import { getPublicStoreById } from '../api/publicService';
 import { submitRating, updateRating, addFavorite, removeFavorite, getUserFavoriteStoreIds, reportReview } from '../api/userStoreService';
 import StarRating from '../components/StarRating';
 import SafeImage from '../components/SafeImage';
+import { formatStoreLocation } from '../utils/locationUtils';
 import SkeletonLoader from '../components/SkeletonLoader';
 import { 
   Star, MapPin, ArrowLeft, CheckCircle2, ShieldAlert, Award, 
@@ -405,7 +406,7 @@ const StoreProfilePage = () => {
               </h1>
               <p className="text-xs sm:text-sm text-[#707873] flex items-center space-x-1.5 font-normal">
                 <MapPin className="w-4 h-4 text-[#9CA59E] shrink-0" />
-                <span>{store.address}{store.city ? `, ${store.city}` : ''}</span>
+                <span>{formatStoreLocation(store)}</span>
               </p>
             </div>
 

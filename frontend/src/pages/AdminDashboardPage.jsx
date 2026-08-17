@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getDashboardMetrics, getPendingStores, approveStore, rejectStore } from '../api/adminService';
 import { Users, Store, Star, ArrowRight, ShieldCheck, Activity, Award, Clock, CheckCircle2, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { formatStoreLocation } from '../utils/locationUtils';
 
 const AdminDashboardPage = () => {
   const [metrics, setMetrics] = useState(null);
@@ -471,7 +472,7 @@ const AdminDashboardPage = () => {
                         🟢 APPROVED
                       </span>
                     </div>
-                    <p className="text-[11px] text-[#707873] truncate">{store.address}</p>
+                    <p className="text-[11px] text-[#707873] truncate">{formatStoreLocation(store)}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <div className="flex items-center justify-end space-x-1">

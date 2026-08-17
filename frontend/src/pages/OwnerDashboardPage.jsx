@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getOwnerDashboard, createOwnerStore, postOwnerReply, deleteOwnerReply } from '../api/ownerService';
 import StarRating from '../components/StarRating';
-import { Store, Star, Users, MapPin, Mail, AlertCircle, RefreshCw, Award, TrendingUp, Sparkles, CheckCircle2, Clock, XCircle, Send, MessageSquare, CornerDownRight, Edit3, Trash2 } from 'lucide-react';
+import { formatStoreLocation } from '../utils/locationUtils';
+import { Store, Star, Users, MapPin, Mail, AlertCircle, RefreshCw, Award, TrendingUp, Sparkles, CheckCircle2, Clock, XCircle, Send, MessageSquare, CornerDownRight, Edit3, Trash2, ExternalLink } from 'lucide-react';
 
 const OwnerDashboardPage = () => {
   const [storeData, setStoreData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const activeTab = ['overview', 'ratings', 'analytics'].includes(tabParam) ? tabParam : 'overview';
+
+  const setActiveTab = (tab) => {
+    setSearchParams({ tab });
+  };
 
   // Form state for creating a store
   const [name, setName] = useState('');
@@ -169,11 +177,18 @@ const OwnerDashboardPage = () => {
 
   if (error) {
     return (
-      <div className="max-w-5xl mx-auto p-6 text-left">
+      <div className="max-w-5xl mx-auto p-6 text-left space-y-4">
         <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-[#9B2C2C] text-xs sm:text-sm flex items-center space-x-2">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span>{error}</span>
         </div>
+        <button
+          onClick={fetchDashboard}
+          className="px-5 py-2.5 bg-[#173D32] hover:bg-[#2F6654] text-white font-extrabold rounded-xl text-xs flex items-center space-x-2 transition-colors cursor-pointer shadow-xs"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>Retry Loading Dashboard</span>
+        </button>
       </div>
     );
   }
@@ -364,9 +379,21 @@ const OwnerDashboardPage = () => {
             <p className="text-xs text-[#707873]">Monitor customer feedback telemetry, post public owner responses, and manage reputation.</p>
           </div>
 
-          <div className="inline-flex items-center space-x-2 px-4 py-2 bg-[#E7F0EB] border border-[#CDE0D5] text-[#173D32] rounded-xl text-xs font-extrabold shrink-0 self-start sm:self-auto">
-            <Award className="w-4 h-4 text-[#C9A24A]" />
-            <span>Reputation Management</span>
+          <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-auto">
+            <Link
+              to={`/stores/${storeData.id}`}
+              className="px-3.5 py-2 bg-[#F7F6F1] hover:bg-[#E7F0EB] text-[#173D32] border border-[#E2E5DF] rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-[#173D32]" />
+              <span>View Public Store</span>
+            </Link>
+            <Link
+              to="/owner/store"
+              className="px-3.5 py-2 bg-[#173D32] hover:bg-[#2F6654] text-white rounded-xl text-xs font-extrabold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-xs"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-[#C9A24A]" />
+              <span>Edit Store Profile</span>
+            </Link>
           </div>
         </div>
 
@@ -377,7 +404,7 @@ const OwnerDashboardPage = () => {
           </div>
           <div className="flex items-center space-x-2 text-[#707873]">
             <MapPin className="w-4 h-4 text-[#9CA59E] shrink-0" />
-            <span className="truncate text-[#171A18]">{storeData.address}</span>
+            <span className="truncate text-[#171A18]">{formatStoreLocation(storeData)}</span>
           </div>
         </div>
 

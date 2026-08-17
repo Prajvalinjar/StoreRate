@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getMyRatings, updateRating } from '../api/userStoreService';
 import StarRating from '../components/StarRating';
+import { formatStoreLocation } from '../utils/locationUtils';
 import { Star, MapPin, Edit3, X, AlertCircle, CheckCircle2, RefreshCw, Compass, Heart, MessageSquare } from 'lucide-react';
 
 const UserRatingsPage = () => {
@@ -228,7 +229,7 @@ const UserRatingsPage = () => {
                 </div>
                 <p className="text-xs text-[#707873] flex items-center space-x-1.5">
                   <MapPin className="w-3.5 h-3.5 text-[#9CA59E] shrink-0" />
-                  <span className="truncate">{item.store.address}</span>
+                  <span className="truncate">{formatStoreLocation(item.store)}</span>
                 </p>
               </div>
 

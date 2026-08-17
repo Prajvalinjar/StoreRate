@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Edit3, Star, Store, Sparkles, Heart, RefreshCw } from 'lucide-react';
 import StarRating from './StarRating';
-import SafeImage from './SafeImage';
+import { formatStoreLocation } from '../utils/locationUtils';
 
 const STORE_IMAGES = [
   {
@@ -125,7 +125,7 @@ const StoreCard = ({ store, onRate, isSaved = false, onToggleFavorite, savingFav
           </div>
           <p className="text-xs text-[#707873] flex items-center space-x-1.5 font-normal">
             <MapPin className="w-3.5 h-3.5 text-[#9CA59E] shrink-0" />
-            <span className="truncate">{address}</span>
+            <span className="truncate">{formatStoreLocation(store)}</span>
           </p>
         </div>
 

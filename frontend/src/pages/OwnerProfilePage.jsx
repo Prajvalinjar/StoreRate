@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getOwnerDashboard } from '../api/ownerService';
+import { formatStoreLocation } from '../utils/locationUtils';
 import { User, Mail, MapPin, Shield, Calendar, KeyRound, CheckCircle2, Store, Award, RefreshCw, AlertCircle } from 'lucide-react';
 
 const OwnerProfilePage = () => {
@@ -149,7 +150,7 @@ const OwnerProfilePage = () => {
                 <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block mb-0.5">
                   Store Address
                 </span>
-                <p className="text-[#171A18]">{storeData.address}</p>
+                <p className="text-[#171A18]">{formatStoreLocation(storeData)}</p>
               </div>
             </div>
           ) : (
