@@ -1,10 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Lock, Users } from 'lucide-react';
+import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 const FinalCTA = () => {
+  const [sectionRef, isRevealed] = useScrollReveal({ threshold: 0.1 });
+
   return (
-    <section className="py-16 sm:py-24 bg-[#F7F6F1] border-t border-[#E2E5DF]">
+    <section
+      ref={sectionRef}
+      className={`py-16 sm:py-24 bg-[#F7F6F1] border-t border-[#E2E5DF] reveal-hidden ${
+        isRevealed ? 'reveal-visible' : ''
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         {/* Testimonials Callout */}
         <div className="bg-white border border-[#E2E5DF] rounded-3xl p-8 sm:p-10 shadow-xs flex flex-col md:flex-row items-center gap-8 text-left">

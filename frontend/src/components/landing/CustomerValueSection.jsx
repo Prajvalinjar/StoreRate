@@ -1,8 +1,11 @@
 import React from 'react';
 import StarRating from '../StarRating';
 import { Search, Store, Star, CheckCircle } from 'lucide-react';
+import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 const CustomerValueSection = () => {
+  const [sectionRef, isRevealed] = useScrollReveal({ threshold: 0.1 });
+
   const steps = [
     {
       label: 'SEARCH',
@@ -39,7 +42,12 @@ const CustomerValueSection = () => {
   ];
 
   return (
-    <section className="py-16 md:py-24 bg-[#F7F7F2] border-t border-stone-200/90">
+    <section
+      ref={sectionRef}
+      className={`py-16 md:py-24 bg-[#F7F7F2] border-t border-stone-200/90 reveal-hidden ${
+        isRevealed ? 'reveal-visible' : ''
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         {/* Section 1: Know Before You Choose */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">

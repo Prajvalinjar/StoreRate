@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import { getTopRatedStores } from '../../api/publicService';
 import StoreCard from '../StoreCard';
 import { ArrowRight, Store, RefreshCw } from 'lucide-react';
+import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 const FeaturedStores = () => {
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sectionRef, isRevealed] = useScrollReveal({ threshold: 0.1 });
 
   const fetchTopStores = async () => {
     setLoading(true);
@@ -34,7 +36,12 @@ const FeaturedStores = () => {
   const validStores = Array.isArray(stores) ? stores.filter((s) => s && typeof s === 'object' && s.id) : [];
 
   return (
-    <section className="py-16 sm:py-24 bg-[#F7F6F1] border-t border-[#E2E5DF]">
+    <section
+      ref={sectionRef}
+      className={`py-16 sm:py-24 bg-[#F7F6F1] border-t border-[#E2E5DF] reveal-hidden ${
+        isRevealed ? 'reveal-visible' : ''
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">

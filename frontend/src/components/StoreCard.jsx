@@ -67,7 +67,7 @@ const StoreCard = ({ store = {}, onRate, isSaved = false, onToggleFavorite, savi
   };
 
   return (
-    <div className="bg-white border border-[#E2E5DF] rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between hover:border-[#173D32]/40 hover:shadow-xl transition-all duration-300 group">
+    <div className="bg-white border border-[#E2E5DF] rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between hover:border-[#173D32]/40 hover:shadow-xl transition-all duration-300 group card-interactive">
       {/* Store Header Image */}
       <div className="relative h-44 w-full bg-[#173D32] overflow-hidden">
         <SafeImage

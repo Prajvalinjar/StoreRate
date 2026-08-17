@@ -2,10 +2,19 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import SafeImage from '../SafeImage';
+import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 const StoreOwnerSection = () => {
+  const [sectionRef, isRevealed] = useScrollReveal({ threshold: 0.1 });
+
   return (
-    <section id="for-businesses" className="py-16 sm:py-24 bg-[#F7F6F1] border-t border-[#E2E5DF]">
+    <section
+      id="for-businesses"
+      ref={sectionRef}
+      className={`py-16 sm:py-24 bg-[#F7F6F1] border-t border-[#E2E5DF] reveal-hidden ${
+        isRevealed ? 'reveal-visible' : ''
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white border border-[#E2E5DF] rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 items-center text-left">
           {/* Content Column */}

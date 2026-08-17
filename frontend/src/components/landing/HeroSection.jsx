@@ -2,10 +2,19 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, ShieldCheck, Search, Star } from 'lucide-react';
 import SafeImage from '../SafeImage';
+import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 const HeroSection = ({ stats, loading }) => {
+  const [sectionRef, isRevealed] = useScrollReveal({ threshold: 0.1 });
+
   return (
-    <section id="discover" className="pt-12 sm:pt-16 pb-16 sm:pb-24 bg-[#F7F6F1] relative overflow-hidden text-left text-[#171A18]">
+    <section
+      id="discover"
+      ref={sectionRef}
+      className={`pt-12 sm:pt-16 pb-16 sm:pb-24 bg-[#F7F6F1] relative overflow-hidden text-left text-[#171A18] reveal-hidden ${
+        isRevealed ? 'reveal-visible' : ''
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           {/* Left Column: Editorial Headlines & Discovery Search */}
@@ -29,16 +38,16 @@ const HeroSection = ({ stats, loading }) => {
             <div className="pt-2 flex flex-col sm:flex-row items-center gap-4">
               <Link
                 to="/stores"
-                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-7 py-3.5 bg-[#173D32] hover:bg-[#2F6654] text-white font-extrabold rounded-xl text-sm transition-all shadow-xs"
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-7 py-3.5 bg-[#173D32] hover:bg-[#2F6654] text-white font-extrabold rounded-xl text-sm transition-all shadow-xs btn-interactive"
               >
                 <Search className="w-4 h-4" />
                 <span>Explore Businesses</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
 
               <Link
                 to="/register"
-                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-7 py-3.5 bg-white hover:bg-[#F7F6F1] text-[#171A18] border border-[#E2E5DF] font-bold rounded-xl text-sm transition-all shadow-xs"
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-7 py-3.5 bg-white hover:bg-[#F7F6F1] text-[#171A18] border border-[#E2E5DF] hover:border-[#CBD2C8] font-bold rounded-xl text-sm transition-all shadow-xs btn-interactive"
               >
                 <span>For Business Owners</span>
               </Link>

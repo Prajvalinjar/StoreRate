@@ -1,7 +1,10 @@
 import React from 'react';
 import { ShieldCheck, TrendingUp, Sparkles } from 'lucide-react';
+import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 const BusinessValueSection = () => {
+  const [sectionRef, isRevealed] = useScrollReveal({ threshold: 0.1 });
+
   const benefits = [
     {
       title: 'Build Trust',
@@ -21,7 +24,12 @@ const BusinessValueSection = () => {
   ];
 
   return (
-    <section className="py-16 sm:py-24 bg-white border-t border-[#E2E5DF]">
+    <section
+      ref={sectionRef}
+      className={`py-16 sm:py-24 bg-white border-t border-[#E2E5DF] reveal-hidden ${
+        isRevealed ? 'reveal-visible' : ''
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto space-y-3 mb-14">
           <span className="text-[10px] font-extrabold text-[#173D32] uppercase tracking-widest bg-[#E7F0EB] px-3.5 py-1.5 rounded-full inline-block">
@@ -41,7 +49,7 @@ const BusinessValueSection = () => {
             return (
               <div
                 key={idx}
-                className="bg-[#F7F6F1] border border-[#E2E5DF] rounded-2xl p-8 shadow-xs space-y-4 text-left hover:border-[#C4CBC0] hover:shadow-md transition-all duration-200"
+                className="bg-[#F7F6F1] border border-[#E2E5DF] rounded-2xl p-8 shadow-xs space-y-4 text-left hover:border-[#C4CBC0] hover:shadow-md transition-all duration-200 card-interactive"
               >
                 <div className="p-3 bg-[#E7F0EB] text-[#173D32] border border-[#CDE0D5] rounded-xl w-fit">
                   <Icon className="w-6 h-6" />
