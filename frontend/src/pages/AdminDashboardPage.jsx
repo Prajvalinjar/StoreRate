@@ -115,9 +115,9 @@ const AdminDashboardPage = () => {
       )}
 
       {/* KPI Operations Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Users */}
-        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-3">
+        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider">TOTAL USERS</span>
             <div className="p-2 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl text-[#171A18]">
@@ -128,7 +128,7 @@ const AdminDashboardPage = () => {
             <div className="text-3xl font-black text-[#171A18] tracking-tight">
               {loading ? <span className="animate-pulse">...</span> : metrics?.totalUsers ?? 0}
             </div>
-            <p className="text-[11px] text-[#707873] mt-1 font-normal">Registered accounts</p>
+            <p className="text-[11px] text-[#707873] mt-0.5 font-normal">Registered accounts</p>
           </div>
           <div className="pt-2 border-t border-[#E2E5DF]">
             <Link
@@ -141,54 +141,32 @@ const AdminDashboardPage = () => {
           </div>
         </div>
 
-        {/* Total Stores */}
-        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-3">
+        {/* Total Stores Breakdown */}
+        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider">APPROVED STORES</span>
+            <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider">TOTAL STORES</span>
             <div className="p-2 bg-[#E7F0EB] border border-[#CDE0D5] rounded-xl text-[#173D32]">
               <Store className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-3xl font-black text-[#171A18] tracking-tight">
+            <div className="text-3xl font-black text-[#173D32] tracking-tight">
               {loading ? <span className="animate-pulse">...</span> : metrics?.totalStores ?? 0}
             </div>
-            <p className="text-[11px] text-[#707873] mt-1 font-normal">Publicly listed stores</p>
+            <p className="text-[11px] text-[#707873] mt-0.5 font-normal">
+              {metrics?.approvedStores ?? 0} Approved • {metrics?.pendingStores ?? 0} Pending
+            </p>
           </div>
-          <div className="pt-2 border-t border-[#E2E5DF]">
-            <Link
-              to="/admin/stores"
-              className="inline-flex items-center space-x-1.5 text-xs font-bold text-[#173D32] hover:underline"
-            >
-              <span>Manage Stores</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+          <div className="pt-2 border-t border-[#E2E5DF] flex items-center justify-between text-[11px]">
+            <span className="text-[#173D32] font-bold">✓ {metrics?.verifiedStores ?? 0} Verified</span>
+            <span className="text-[#707873]">{metrics?.unverifiedStores ?? 0} Unverified</span>
           </div>
         </div>
 
-        {/* Pending Approvals */}
-        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-3">
+        {/* Total Ratings & Written Reviews */}
+        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider">PENDING APPROVALS</span>
-            <div className="p-2 bg-amber-50 border border-amber-200 rounded-xl text-amber-700">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <div className="text-3xl font-black text-amber-700 tracking-tight">
-              {loading ? <span className="animate-pulse">...</span> : pendingStores.length}
-            </div>
-            <p className="text-[11px] text-[#707873] mt-1 font-normal">Awaiting admin review</p>
-          </div>
-          <div className="pt-2 border-t border-[#E2E5DF]">
-            <span className="text-[11px] text-amber-700 font-bold">Action required</span>
-          </div>
-        </div>
-
-        {/* Total Ratings */}
-        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider">TOTAL RATINGS</span>
+            <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider">PLATFORM RATINGS</span>
             <div className="p-2 bg-[#F5E6C8] border border-[#E8D4A8] rounded-xl text-[#C9A24A]">
               <Star className="w-4 h-4 fill-[#C9A24A]" />
             </div>
@@ -197,10 +175,111 @@ const AdminDashboardPage = () => {
             <div className="text-3xl font-black text-[#C9A24A] tracking-tight">
               {loading ? <span className="animate-pulse">...</span> : metrics?.totalRatings ?? 0}
             </div>
-            <p className="text-[11px] text-[#707873] mt-1 font-normal">Submitted ratings</p>
+            <p className="text-[11px] text-[#707873] mt-0.5 font-normal">
+              Global Platform Total ({metrics?.totalWrittenReviews ?? 0} written reviews)
+            </p>
+          </div>
+          <div className="pt-2 border-t border-[#E2E5DF] flex items-center justify-between text-[11px]">
+            <span className="text-[#707873] font-medium">Avg Score:</span>
+            <span className="font-extrabold text-[#C9A24A]">{metrics?.platformAverageRating ?? '0.0'} ★</span>
+          </div>
+        </div>
+
+        {/* Moderation Reports */}
+        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider">MODERATION REPORTS</span>
+            <div className="p-2 bg-amber-50 border border-amber-200 rounded-xl text-amber-700">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <div className="text-3xl font-black text-amber-700 tracking-tight">
+              {loading ? <span className="animate-pulse">...</span> : metrics?.totalReports ?? 0}
+            </div>
+            <p className="text-[11px] text-[#707873] mt-0.5 font-normal">
+              {metrics?.pendingReportsCount ?? 0} Pending • {metrics?.resolvedReportsCount ?? 0} Resolved
+            </p>
           </div>
           <div className="pt-2 border-t border-[#E2E5DF]">
-            <span className="text-[11px] text-[#707873] font-mono">Telemetry verified</span>
+            <Link
+              to="/admin/reports"
+              className="inline-flex items-center space-x-1.5 text-xs font-bold text-[#173D32] hover:underline"
+            >
+              <span>Review Reports</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Analytics & City Analytics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Category Analytics */}
+        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 shadow-xs space-y-4 text-left">
+          <div className="border-b border-[#E2E5DF] pb-3 flex items-center justify-between">
+            <h2 className="font-display text-base font-bold text-[#171A18] flex items-center space-x-2">
+              <Award className="w-4 h-4 text-[#173D32]" />
+              <span>Category Performance Breakdown</span>
+            </h2>
+            <span className="text-[11px] text-[#707873] font-mono">
+              {metrics?.categoryAnalytics?.length ?? 0} active categories
+            </span>
+          </div>
+
+          <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+            {metrics?.categoryAnalytics && metrics.categoryAnalytics.length > 0 ? (
+              metrics.categoryAnalytics.map((cat) => (
+                <div key={cat.name} className="p-3 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl flex items-center justify-between text-xs">
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-[#171A18] text-sm block">{cat.name}</span>
+                    <span className="text-[11px] text-[#707873]">
+                      {cat.storeCount} {cat.storeCount === 1 ? 'store' : 'stores'} • {cat.totalRatings} {cat.totalRatings === 1 ? 'rating' : 'ratings'}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-black text-[#C9A24A] text-sm block">{cat.averageRating.toFixed(1)} ★</span>
+                    <span className="text-[10px] text-[#707873]">Category Avg</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-[#707873] py-4 text-center">No category metrics available.</p>
+            )}
+          </div>
+        </div>
+
+        {/* City Analytics */}
+        <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 shadow-xs space-y-4 text-left">
+          <div className="border-b border-[#E2E5DF] pb-3 flex items-center justify-between">
+            <h2 className="font-display text-base font-bold text-[#171A18] flex items-center space-x-2">
+              <Activity className="w-4 h-4 text-[#173D32]" />
+              <span>Geographic Distribution by City</span>
+            </h2>
+            <span className="text-[11px] text-[#707873] font-mono">
+              {metrics?.cityAnalytics?.length ?? 0} locations
+            </span>
+          </div>
+
+          <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+            {metrics?.cityAnalytics && metrics.cityAnalytics.length > 0 ? (
+              metrics.cityAnalytics.map((c) => (
+                <div key={c.name} className="p-3 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl flex items-center justify-between text-xs">
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-[#171A18] text-sm block">{c.name}</span>
+                    <span className="text-[11px] text-[#707873]">
+                      {c.storeCount} {c.storeCount === 1 ? 'store' : 'stores'} • {c.totalRatings} {c.totalRatings === 1 ? 'rating' : 'ratings'}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-black text-[#173D32] text-sm block">{c.averageRating.toFixed(1)} ★</span>
+                    <span className="text-[10px] text-[#707873]">Location Avg</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-[#707873] py-4 text-center">No city distribution metrics available.</p>
+            )}
           </div>
         </div>
       </div>

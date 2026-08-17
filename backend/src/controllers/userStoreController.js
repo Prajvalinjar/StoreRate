@@ -113,9 +113,22 @@ const listUserRatings = async (req, res, next) => {
   }
 };
 
+const getUserDashboard = async (req, res, next) => {
+  try {
+    const result = await userStoreService.getUserDashboard(req.user.id);
+    return res.status(200).json({
+      status: 'success',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   listStores,
   postRating,
   putRating,
   listUserRatings,
+  getUserDashboard,
 };

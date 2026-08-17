@@ -189,10 +189,71 @@ const getUserRatings = async (userId) => {
   return { ratings };
 };
 
+const getUserDashboard = async (userId) => {
+  const [ratings, favoritesCount, unreadNotificationsCount, recentNotifications] = await Promise.all([
+    prisma.rating.findMany({
+      where: { userId },
+      include: {
+        store: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            city: true,
+            category: true,
+            imageUrl: true,
+            status: true,
+            isVerified: true,
+          },
+        },
+      },
+      orderBy: { updatedAt: 'desc' },
+    }),
+    prisma.favorite.count({ where: { userId } }),
+    prisma.notification.count({ where: { userId, isRead: false } }),
+    prisma.notification.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    }),
+  ]);
+
+  const ratingsSubmittedCount = ratings.length;
+  const writtenReviewsCount = ratings.filter((r) => r.review && r.review.trim().length > 0).length;
+
+  const sum = ratings.reduce((acc, r) => acc + r.rating, 0);
+  const averageRatingGiven = ratingsSubmittedCount > 0
+    ? Number((sum / ratingsSubmittedCount).toFixed(1))
+    : 0;
+
+  const highestRatingGiven = ratingsSubmittedCount > 0
+    ? Math.max(...ratings.map((r) => r.rating))
+    : null;
+
+  const lowestRatingGiven = ratingsSubmittedCount > 0
+    ? Math.min(...ratings.map((r) => r.rating))
+    : null;
+
+  return {
+    summary: {
+      ratingsSubmittedCount,
+      writtenReviewsCount,
+      favoriteStoresCount: favoritesCount,
+      unreadNotificationsCount,
+      averageRatingGiven,
+      highestRatingGiven,
+      lowestRatingGiven,
+    },
+    recentRatings: ratings.slice(0, 5),
+    recentNotifications,
+  };
+};
+
 module.exports = {
   UserStoreError,
   getStoresForUser,
   submitRating,
   updateRating,
   getUserRatings,
+  getUserDashboard,
 };

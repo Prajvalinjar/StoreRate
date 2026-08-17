@@ -16,11 +16,47 @@ const sanitizeUser = (user) => {
 };
 
 const getDashboardMetrics = async () => {
-  const [totalUsers, totalStores, totalRatings, pendingStoresCount, userRoles, storePerformance, pendingReportsCount] = await Promise.all([
+  const [
+    totalUsers,
+    totalStores,
+    approvedStores,
+    pendingStores,
+    rejectedStores,
+    verifiedStores,
+    unverifiedStores,
+    totalRatings,
+    totalWrittenReviews,
+    totalFavorites,
+    totalReports,
+    pendingReportsCount,
+    resolvedReportsCount,
+    dismissedReportsCount,
+    hiddenReviewsCount,
+    avgResult,
+    ratingGroup,
+    userRoles,
+    storePerformance
+  ] = await Promise.all([
     prisma.user.count(),
+    prisma.store.count(),
     prisma.store.count({ where: { status: 'APPROVED' } }),
-    prisma.rating.count(),
     prisma.store.count({ where: { status: 'PENDING' } }),
+    prisma.store.count({ where: { status: 'REJECTED' } }),
+    prisma.store.count({ where: { status: 'APPROVED', isVerified: true } }),
+    prisma.store.count({ where: { status: 'APPROVED', isVerified: false } }),
+    prisma.rating.count(),
+    prisma.rating.count({ where: { review: { not: null } } }),
+    prisma.favorite.count(),
+    prisma.reviewReport.count(),
+    prisma.reviewReport.count({ where: { status: 'PENDING' } }),
+    prisma.reviewReport.count({ where: { status: 'RESOLVED' } }),
+    prisma.reviewReport.count({ where: { status: 'DISMISSED' } }),
+    prisma.rating.count({ where: { reviewStatus: 'HIDDEN' } }),
+    prisma.rating.aggregate({ _avg: { rating: true } }),
+    prisma.rating.groupBy({
+      by: ['rating'],
+      _count: { rating: true },
+    }),
     prisma.user.groupBy({
       by: ['role'],
       _count: { role: true },
@@ -30,44 +66,125 @@ const getDashboardMetrics = async () => {
       select: {
         id: true,
         name: true,
+        email: true,
         address: true,
+        city: true,
         category: true,
+        isVerified: true,
+        status: true,
+        createdAt: true,
         ratings: {
-          select: { rating: true },
+          select: {
+            rating: true,
+            review: true,
+          },
         },
       },
     }),
-    prisma.reviewReport.count({ where: { status: 'PENDING' } }),
   ]);
+
+  const rawAvg = avgResult?._avg?.rating;
+  const platformAverageRating =
+    rawAvg !== null && rawAvg !== undefined && !isNaN(rawAvg)
+      ? Number(rawAvg.toFixed(2))
+      : 0.0;
+
+  const ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  ratingGroup.forEach((r) => {
+    if (ratingDistribution[r.rating] !== undefined) {
+      ratingDistribution[r.rating] = r._count.rating;
+    }
+  });
 
   const roleDistribution = { USER: 0, STORE_OWNER: 0, ADMIN: 0 };
   userRoles.forEach((r) => {
     roleDistribution[r.role] = r._count.role;
   });
 
+  // Calculate Category Analytics dynamically from DB
+  const categoryMap = {};
+  const cityMap = {};
+
   const storesWithPerformance = storePerformance.map((s) => {
     const total = s.ratings.length;
+    const writtenCount = s.ratings.filter((r) => r.review && r.review.trim().length > 0).length;
     const sum = s.ratings.reduce((acc, r) => acc + r.rating, 0);
     const averageRating = total > 0 ? Number((sum / total).toFixed(1)) : 0;
+
+    const cat = s.category ? s.category.trim() : 'General';
+    if (!categoryMap[cat]) {
+      categoryMap[cat] = { name: cat, storeCount: 0, totalRatings: 0, ratingSum: 0 };
+    }
+    categoryMap[cat].storeCount += 1;
+    categoryMap[cat].totalRatings += total;
+    categoryMap[cat].ratingSum += sum;
+
+    const cityName = s.city && s.city.trim() ? s.city.trim() : 'Location not specified';
+    if (!cityMap[cityName]) {
+      cityMap[cityName] = { name: cityName, storeCount: 0, totalRatings: 0, ratingSum: 0 };
+    }
+    cityMap[cityName].storeCount += 1;
+    cityMap[cityName].totalRatings += total;
+    cityMap[cityName].ratingSum += sum;
+
     return {
       id: s.id,
       name: s.name,
+      email: s.email,
       address: s.address,
-      category: s.category || 'General',
+      city: s.city ? s.city.trim() : null,
+      category: cat,
+      status: s.status,
+      isVerified: Boolean(s.isVerified),
       averageRating,
       totalRatings: total,
+      writtenReviewsCount: writtenCount,
+      createdAt: s.createdAt,
     };
   });
-  storesWithPerformance.sort((a, b) => b.averageRating - a.averageRating);
+
+  storesWithPerformance.sort((a, b) => b.averageRating - a.averageRating || b.totalRatings - a.totalRatings);
+
+  const categoryAnalytics = Object.values(categoryMap).map((cat) => ({
+    name: cat.name,
+    storeCount: cat.storeCount,
+    totalRatings: cat.totalRatings,
+    averageRating: cat.totalRatings > 0 ? Number((cat.ratingSum / cat.totalRatings).toFixed(1)) : 0,
+  }));
+  categoryAnalytics.sort((a, b) => b.totalRatings - a.totalRatings || b.storeCount - a.storeCount);
+
+  const cityAnalytics = Object.values(cityMap).map((c) => ({
+    name: c.name,
+    storeCount: c.storeCount,
+    totalRatings: c.totalRatings,
+    averageRating: c.totalRatings > 0 ? Number((c.ratingSum / c.totalRatings).toFixed(1)) : 0,
+  }));
+  cityAnalytics.sort((a, b) => b.storeCount - a.storeCount || b.totalRatings - a.totalRatings);
 
   return {
     totalUsers,
     totalStores,
+    approvedStores,
+    pendingStores,
+    pendingStoresCount: pendingStores,
+    rejectedStores,
+    verifiedStores,
+    unverifiedStores,
     totalRatings,
-    pendingStoresCount,
+    totalWrittenReviews,
+    totalFavorites,
+    totalReports,
     pendingReportsCount,
+    resolvedReportsCount,
+    dismissedReportsCount,
+    hiddenReviewsCount,
+    platformAverageRating,
+    ratingDistribution,
     roleDistribution,
+    categoryAnalytics,
+    cityAnalytics,
     storePerformance: storesWithPerformance,
+    topStores: storesWithPerformance.slice(0, 10),
   };
 };
 

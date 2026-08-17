@@ -56,6 +56,29 @@ const getOwnerDashboard = async (ownerId) => {
   const sum = isApproved ? store.ratings.reduce((acc, r) => acc + r.rating, 0) : 0;
   const averageRating = totalRatings > 0 ? Number((sum / totalRatings).toFixed(1)) : null;
 
+  const writtenReviewsCount = isApproved
+    ? store.ratings.filter((r) => r.review && r.review.trim().length > 0).length
+    : 0;
+
+  const ownerRepliesCount = isApproved
+    ? store.ratings.filter((r) => r.ownerReply && r.ownerReply.trim().length > 0).length
+    : 0;
+
+  const unansweredReviewsCount = Math.max(0, writtenReviewsCount - ownerRepliesCount);
+
+  const responseRate = writtenReviewsCount > 0
+    ? Number(((ownerRepliesCount / writtenReviewsCount) * 100).toFixed(1))
+    : 0;
+
+  const ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  if (isApproved) {
+    store.ratings.forEach((r) => {
+      if (ratingDistribution[r.rating] !== undefined) {
+        ratingDistribution[r.rating]++;
+      }
+    });
+  }
+
   const ratings = isApproved
     ? store.ratings.map((r) => ({
         id: r.id,
@@ -86,6 +109,11 @@ const getOwnerDashboard = async (ownerId) => {
       createdAt: store.createdAt,
       averageRating,
       totalRatings,
+      writtenReviewsCount,
+      ownerRepliesCount,
+      unansweredReviewsCount,
+      responseRate,
+      ratingDistribution,
       ratings,
     },
   };
