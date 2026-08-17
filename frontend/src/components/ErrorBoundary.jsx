@@ -12,12 +12,20 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('StoreRate ErrorBoundary caught an unhandled error:', error, errorInfo);
+    console.error('StoreRate ErrorBoundary caught an unhandled exception:', {
+      name: error?.name,
+      message: error?.message,
+      stack: error?.stack,
+      componentStack: errorInfo?.componentStack,
+      pathname: window.location.pathname,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   handleReset = () => {
     this.setState({ hasError: false, error: null });
-    window.location.reload();
+    // Navigate to /dashboard or /stores to safely recover state without looping
+    window.location.href = '/dashboard';
   };
 
   render() {
