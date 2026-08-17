@@ -1,20 +1,20 @@
 export const formatStoreLocation = (storeOrAddress, city = null) => {
+  if (!storeOrAddress && !city) {
+    return 'Location not specified';
+  }
+
   let address = '';
   let cityName = city;
 
   if (typeof storeOrAddress === 'object' && storeOrAddress !== null) {
     address = storeOrAddress.address || '';
-    cityName = storeOrAddress.city || null;
-  } else {
-    address = storeOrAddress || '';
+    cityName = storeOrAddress.city || city || null;
+  } else if (storeOrAddress) {
+    address = String(storeOrAddress);
   }
 
-  address = address.trim();
-  if (cityName && typeof cityName === 'string' && cityName.trim().length > 0) {
-    cityName = cityName.trim();
-  } else {
-    cityName = null;
-  }
+  address = typeof address === 'string' ? address.trim() : String(address || '').trim();
+  cityName = typeof cityName === 'string' ? cityName.trim() : (cityName ? String(cityName).trim() : null);
 
   if (!address) {
     return cityName || 'Location not specified';

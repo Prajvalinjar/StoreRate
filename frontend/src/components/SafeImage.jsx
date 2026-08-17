@@ -27,7 +27,10 @@ const SafeImage = ({
   };
 
   const currentSrc = status === 'primary' ? src : status === 'fallback' ? fallbackSrc : null;
-  const CategoryIcon = categoryIcons[category.toLowerCase()] || categoryIcons.default;
+  const catKey = (typeof category === 'string' && category.trim().length > 0)
+    ? category.trim().toLowerCase()
+    : 'default';
+  const CategoryIcon = categoryIcons[catKey] || categoryIcons.default;
 
   if (status === 'svg' || !currentSrc) {
     return (

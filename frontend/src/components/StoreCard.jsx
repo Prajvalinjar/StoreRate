@@ -41,8 +41,15 @@ const getStoreVisual = (storeId, storeName) => {
   return STORE_IMAGES[index];
 };
 
-const StoreCard = ({ store, onRate, isSaved = false, onToggleFavorite, savingFavorite = false }) => {
-  const { id, name, address, averageRating, totalRatings, userRating } = store;
+const StoreCard = ({ store = {}, onRate, isSaved = false, onToggleFavorite, savingFavorite = false }) => {
+  if (!store || typeof store !== 'object' || !store.id) {
+    return null;
+  }
+
+  const { id, name = 'Business Listing', address = '', userRating } = store;
+  const averageRating = Number(store.averageRating || 0);
+  const totalRatings = Number(store.totalRatings || store.ratingCount || 0);
+  const category = typeof store.category === 'string' ? store.category : 'General';
   const visual = getStoreVisual(id, name);
 
   // Rating percentage position on 1-5 scale

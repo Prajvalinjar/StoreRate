@@ -31,6 +31,8 @@ const FeaturedStores = () => {
     fetchTopStores();
   }, []);
 
+  const validStores = Array.isArray(stores) ? stores.filter((s) => s && typeof s === 'object' && s.id) : [];
+
   return (
     <section className="py-16 sm:py-24 bg-[#F7F6F1] border-t border-[#E2E5DF]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -84,7 +86,7 @@ const FeaturedStores = () => {
               <span>Try Again</span>
             </button>
           </div>
-        ) : stores.length === 0 ? (
+        ) : validStores.length === 0 ? (
           <div className="bg-white border border-[#E2E5DF] rounded-2xl p-12 text-center space-y-3 shadow-xs">
             <Store className="w-8 h-8 text-[#173D32] mx-auto" />
             <p className="font-display text-base font-bold text-[#171A18]">No featured stores available</p>
@@ -92,7 +94,7 @@ const FeaturedStores = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {stores.map((store) => (
+            {validStores.map((store) => (
               <StoreCard key={store.id} store={store} />
             ))}
           </div>
