@@ -146,7 +146,7 @@ const StoreCard = ({ store, onRate, isSaved = false, onToggleFavorite, savingFav
                   <div className="flex flex-col justify-center">
                     <StarRating value={averageRating} readOnly size="sm" />
                     <span className="text-[11px] text-[#707873] font-medium mt-0.5">
-                      {totalRatings} {totalRatings === 1 ? 'verified review' : 'verified reviews'}
+                      {totalRatings} {totalRatings === 1 ? 'community rating' : 'community ratings'}
                     </span>
                   </div>
                 </div>
