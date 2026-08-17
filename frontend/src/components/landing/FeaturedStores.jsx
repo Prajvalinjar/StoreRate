@@ -7,21 +7,27 @@ import { ArrowRight, Store, RefreshCw } from 'lucide-react';
 const FeaturedStores = () => {
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchTopStores = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await getTopRatedStores(3);
+      if (response.status === 'success') {
+        setStores(response.data?.stores || []);
+      } else {
+        setError('Unable to load featured businesses.');
+      }
+    } catch (err) {
+      console.error('Failed to fetch top featured stores:', err);
+      setError('Unable to connect to StoreRate service.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTopStores = async () => {
-      setLoading(true);
-      try {
-        const response = await getTopRatedStores(3);
-        if (response.status === 'success') {
-          setStores(response.data.stores || []);
-        }
-      } catch (err) {
-        console.error('Failed to fetch top featured stores:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTopStores();
   }, []);
 
@@ -64,6 +70,19 @@ const FeaturedStores = () => {
                 <div className="h-10 bg-[#E7F0EB] rounded-xl w-full" />
               </div>
             ))}
+          </div>
+        ) : error ? (
+          <div className="bg-white border border-[#E2E5DF] rounded-2xl p-12 text-center space-y-3 shadow-xs">
+            <Store className="w-8 h-8 text-rose-600 mx-auto" />
+            <p className="font-display text-base font-bold text-[#171A18]">{error}</p>
+            <button
+              type="button"
+              onClick={fetchTopStores}
+              className="inline-flex items-center space-x-2 text-xs font-bold text-[#173D32] hover:text-[#2F6654] transition-colors cursor-pointer"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Try Again</span>
+            </button>
           </div>
         ) : stores.length === 0 ? (
           <div className="bg-white border border-[#E2E5DF] rounded-2xl p-12 text-center space-y-3 shadow-xs">

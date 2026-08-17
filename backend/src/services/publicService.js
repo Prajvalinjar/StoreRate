@@ -262,8 +262,48 @@ const getPublicStoreById = async (id) => {
   };
 };
 
+/**
+ * Retrieves top rated / featured store listings for public discovery on Landing Page and Explore.
+ * Only APPROVED stores are returned.
+ * Prioritizes rated stores by Bayesian weighted score / average rating / total ratings DESC.
+ * Safely falls back to unrated approved stores sorted by newest createdAt DESC.
+ */
+const getTopRatedStores = async (limit = 6) => {
+  const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 6));
+  const result = await getPublicStores({ limit: 1000 });
+  const allStores = result.stores || [];
+
+  // Separate stores with ratings from stores without ratings
+  const ratedStores = allStores.filter((s) => s.totalRatings > 0);
+  const unratedStores = allStores.filter((s) => s.totalRatings === 0);
+
+  // Sort rated stores: weightedScore DESC, averageRating DESC, totalRatings DESC
+  ratedStores.sort((a, b) => {
+    if (b.weightedScore !== a.weightedScore) {
+      return b.weightedScore - a.weightedScore;
+    }
+    if (b.averageRating !== a.averageRating) {
+      return b.averageRating - a.averageRating;
+    }
+    return b.totalRatings - a.totalRatings;
+  });
+
+  // Sort unrated stores: newest createdAt DESC
+  unratedStores.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  // Combine rated stores first, then fill remaining slots with unrated approved stores
+  const combinedStores = [...ratedStores, ...unratedStores];
+  const featuredStores = combinedStores.slice(0, limitNum);
+
+  return {
+    stores: featuredStores,
+  };
+};
+
 module.exports = {
   getPublicStats,
   getPublicStores,
   getPublicStoreById,
+  getTopRatedStores,
 };
+
