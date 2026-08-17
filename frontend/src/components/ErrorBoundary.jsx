@@ -24,8 +24,7 @@ class ErrorBoundary extends React.Component {
 
   handleReset = () => {
     this.setState({ hasError: false, error: null });
-    // Navigate to /dashboard or /stores to safely recover state without looping
-    window.location.href = '/dashboard';
+    window.location.href = '/';
   };
 
   render() {
