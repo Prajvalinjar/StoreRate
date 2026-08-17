@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Edit3, Star, Store, Sparkles, Heart, RefreshCw } from 'lucide-react';
 import StarRating from './StarRating';
+import SafeImage from './SafeImage';
 import { formatStoreLocation } from '../utils/locationUtils';
 
 const STORE_IMAGES = [
