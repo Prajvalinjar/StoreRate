@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const { createNotification } = require('./notificationService');
+const { analyzeStoreReviews, getReviewAITag } = require('./aiReviewService');
 
 class OwnerError extends Error {
   constructor(message, statusCode) {
@@ -86,6 +87,7 @@ const getOwnerDashboard = async (ownerId) => {
         userEmail: r.user.email,
         rating: r.rating,
         review: r.review,
+        aiTag: r.review ? getReviewAITag(r.review) : null,
         ownerReply: r.ownerReply,
         ownerReplyAt: r.ownerReplyAt,
         createdAt: r.createdAt,
@@ -114,6 +116,7 @@ const getOwnerDashboard = async (ownerId) => {
       unansweredReviewsCount,
       responseRate,
       ratingDistribution,
+      aiInsights: analyzeStoreReviews(isApproved ? store.ratings : []),
       ratings,
     },
   };

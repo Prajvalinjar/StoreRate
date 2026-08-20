@@ -1,4 +1,5 @@
 const prisma = require('../utils/prisma');
+const { analyzeStoreReviews, getReviewAITag } = require('./aiReviewService');
 
 /**
  * Calculates safe platform aggregate statistics for the public landing page.
@@ -238,10 +239,13 @@ const getPublicStoreById = async (id) => {
 
   // Process ratings for public display: hide written text if reviewStatus === 'HIDDEN'
   const publicRatingsList = ratings.map((r) => {
-    if (r.reviewStatus === 'HIDDEN') {
-      return { ...r, review: null };
-    }
-    return r;
+    const isHidden = r.reviewStatus === 'HIDDEN';
+    const reviewText = isHidden ? null : r.review;
+    return {
+      ...r,
+      review: reviewText,
+      aiTag: reviewText ? getReviewAITag(reviewText) : null,
+    };
   });
 
   return {
@@ -257,6 +261,7 @@ const getPublicStoreById = async (id) => {
       ratingCount: totalRatings,
     },
     distribution,
+    aiInsights: analyzeStoreReviews(publicRatingsList),
     recentRatings: publicRatingsList.slice(0, 20),
     ratings: publicRatingsList.slice(0, 20),
   };

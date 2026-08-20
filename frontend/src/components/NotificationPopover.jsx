@@ -142,11 +142,11 @@ const NotificationPopover = () => {
       <button
         type="button"
         onClick={handleToggle}
-        className="relative p-2 text-[#707873] hover:text-[#171A18] hover:bg-[#F7F6F1] rounded-xl transition-colors cursor-pointer border border-[#E2E5DF]"
+        className="relative p-2 text-[#707873] hover:text-[#171A18] hover:bg-[#F7F6F1] hover:scale-[1.03] active:scale-[0.97] rounded-xl transition-all duration-200 cursor-pointer border border-[#E2E5DF] group/bell"
         aria-label="Notifications"
         title="Notifications"
       >
-        <Bell className="w-4 h-4" />
+        <Bell className="w-4 h-4 transition-transform duration-200 group-hover/bell:rotate-6" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-rose-600 text-white text-[10px] font-black rounded-full shadow-xs border-2 border-white">
             {unreadCount > 9 ? '9+' : unreadCount}

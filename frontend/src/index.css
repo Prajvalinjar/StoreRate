@@ -28,9 +28,9 @@
 /* Scroll reveal utility classes */
 .reveal-hidden {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(18px);
   will-change: opacity, transform;
-  transition: opacity 450ms cubic-bezier(0.22, 1, 0.36, 1), transform 450ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 400ms ease-out, transform 400ms ease-out;
 }
 
 .reveal-visible {
@@ -40,7 +40,7 @@
 
 /* Card & Button micro-interaction utilities */
 .card-interactive {
-  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1), border-color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 220ms ease-out, box-shadow 220ms ease-out, border-color 220ms ease-out;
 }
 
 .card-interactive:hover {
@@ -51,8 +51,23 @@
   transition: transform 150ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out, border-color 150ms ease-out;
 }
 
+.btn-interactive:hover {
+  transform: translateY(-1px);
+}
+
 .btn-interactive:active {
   transform: scale(0.98);
+}
+
+/* Favorite Heart Pop Micro-animation */
+@keyframes heartPopAnimation {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+.heart-pop {
+  animation: heartPopAnimation 220ms ease-out;
 }
 
 /* Reduced motion accessibility */
@@ -63,9 +78,11 @@
     transition: none !important;
   }
   .card-interactive,
-  .btn-interactive {
+  .btn-interactive,
+  .heart-pop {
     transform: none !important;
     transition: none !important;
+    animation: none !important;
   }
 }
 
@@ -86,4 +103,44 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #A3AFA0;
+}
+
+/* Dashboard & Layout visual helper utilities */
+.empty-state-compact {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E5DF;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.metric-card-primary {
+  background-color: #173D32;
+  color: #FFFFFF;
+  border: 1px solid #123027;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 200ms ease-out;
+}
+
+.metric-card-secondary {
+  background-color: #FFFFFF;
+  color: #171A18;
+  border: 1px solid #E2E5DF;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 200ms ease-out;
+}
+
+.metric-card-secondary:hover {
+  border-color: #CBD2C8;
 }

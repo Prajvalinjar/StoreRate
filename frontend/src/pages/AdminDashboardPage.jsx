@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getDashboardMetrics, getPendingStores, approveStore, rejectStore } from '../api/adminService';
+import AIReviewInsightsCard from '../components/AIReviewInsightsCard';
 import { Users, Store, Star, ArrowRight, ShieldCheck, Activity, Award, Clock, CheckCircle2, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { formatStoreLocation } from '../utils/locationUtils';
 
@@ -213,6 +214,9 @@ const AdminDashboardPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Platform Review Sentiment Card */}
+      <AIReviewInsightsCard aiInsights={metrics?.platformSentiment} title="Platform Review Sentiment Summary" />
 
       {/* Category Analytics & City Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

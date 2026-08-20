@@ -5,6 +5,7 @@ import { getPublicStoreById } from '../api/publicService';
 import { submitRating, updateRating, addFavorite, removeFavorite, getUserFavoriteStoreIds, reportReview } from '../api/userStoreService';
 import StarRating from '../components/StarRating';
 import SafeImage from '../components/SafeImage';
+import AIReviewInsightsCard from '../components/AIReviewInsightsCard';
 import { formatStoreLocation } from '../utils/locationUtils';
 import SkeletonLoader from '../components/SkeletonLoader';
 import { 
@@ -504,6 +505,9 @@ const StoreProfilePage = () => {
           </div>
         </div>
 
+        {/* AI Review Intelligence Section */}
+        <AIReviewInsightsCard aiInsights={store.aiInsights} title="Store Review Intelligence" />
+
         {/* Customer Reviews Section */}
         <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E5DF] pb-4">
@@ -568,9 +572,23 @@ const StoreProfilePage = () => {
 
                       {/* Written Review Text */}
                       {r.review ? (
-                        <p className="text-xs text-[#171A18] font-normal leading-relaxed bg-white/80 p-3 rounded-xl border border-[#E2E5DF] whitespace-pre-wrap">
-                          "{r.review}"
-                        </p>
+                        <div className="space-y-1.5">
+                          <p className="text-xs text-[#171A18] font-normal leading-relaxed bg-white/80 p-3 rounded-xl border border-[#E2E5DF] whitespace-pre-wrap">
+                            "{r.review}"
+                          </p>
+                          {r.aiTag && (
+                            <div className="flex items-center space-x-1.5 text-[10px]">
+                              <span className="font-mono text-[#707873] uppercase font-bold">AI Tag:</span>
+                              <span className={`px-2 py-0.5 rounded font-bold border ${
+                                r.aiTag.sentiment === 'POSITIVE' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                                r.aiTag.sentiment === 'NEGATIVE' ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                                'bg-slate-50 text-slate-700 border-slate-200'
+                              }`}>
+                                {r.aiTag.sentiment} · {r.aiTag.theme}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <p className="text-xs text-[#9CA59E] italic">No written review submitted.</p>
                       )}

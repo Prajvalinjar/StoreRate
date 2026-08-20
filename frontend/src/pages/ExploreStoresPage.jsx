@@ -398,7 +398,7 @@ const ExploreStoresPage = () => {
           </div>
         ) : (
           /* Store Grid */
-          <div className="space-y-8">
+          <div className="space-y-8 transition-opacity duration-300 ease-out">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {stores.map((store) => (
                 <StoreCard

@@ -53,6 +53,8 @@ const StoreCard = ({ store = {}, onRate, isSaved = false, onToggleFavorite, savi
   const category = typeof store.category === 'string' ? store.category : 'General';
   const visual = getStoreVisual(id, name);
 
+  const [animateHeart, setAnimateHeart] = useState(false);
+
   // Rating percentage position on 1-5 scale
   const ratingPercent = totalRatings > 0
     ? Math.min(Math.max(((averageRating - 1) / 4) * 100, 0), 100)
@@ -61,30 +63,37 @@ const StoreCard = ({ store = {}, onRate, isSaved = false, onToggleFavorite, savi
   const handleFavoriteClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setAnimateHeart(true);
+    setTimeout(() => setAnimateHeart(false), 250);
     if (onToggleFavorite) {
       onToggleFavorite(id, !isSaved);
     }
   };
 
   return (
-    <div className="bg-white border border-[#E2E5DF] rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between hover:border-[#173D32]/40 hover:shadow-xl transition-all duration-300 group card-interactive">
+    <div className="bg-white border border-[#E2E5DF] rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between hover:border-[#173D32]/40 hover:shadow-xl transition-all duration-200 group card-interactive">
       {/* Store Header Image */}
       <div className="relative h-44 w-full bg-[#173D32] overflow-hidden">
         <SafeImage
           src={store.imageUrl || visual.url}
           alt={name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+          className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300 opacity-90"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
         
-        {/* Category Pill & Verified Badge */}
-        <div className="absolute top-3 left-3 flex items-center space-x-1.5 z-10">
-          <span className="bg-[#173D32]/90 backdrop-blur-xs text-[#E7F0EB] text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border border-[#2F6654]">
+        {/* Category Pill & Trust Badge */}
+        <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5 z-10 max-w-[80%]">
+          <span className="bg-[#173D32]/90 backdrop-blur-xs text-[#E7F0EB] text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-[#2F6654]">
             {store.category || visual.category}
           </span>
-          {store.isVerified === true && (
-            <span className="bg-[#C9A24A]/90 backdrop-blur-xs text-[#173D32] text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full border border-amber-300">
-              ✓ Verified Business
+          {store.status === 'APPROVED' && store.isVerified === true && (
+            <span className="bg-[#C9A24A]/95 backdrop-blur-xs text-[#173D32] text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border border-amber-300 shadow-2xs">
+              ✓ VERIFIED BUSINESS
+            </span>
+          )}
+          {store.status === 'APPROVED' && !store.isVerified && (
+            <span className="bg-[#173D32]/90 backdrop-blur-xs text-[#D0E2DB] text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border border-[#2F6654]">
+              APPROVED BY STORERATE
             </span>
           )}
         </div>
@@ -95,7 +104,7 @@ const StoreCard = ({ store = {}, onRate, isSaved = false, onToggleFavorite, savi
             type="button"
             onClick={handleFavoriteClick}
             disabled={savingFavorite}
-            className={`absolute top-3 right-3 z-20 p-2 rounded-xl border backdrop-blur-xs transition-all duration-200 cursor-pointer ${
+            className={`absolute top-3 right-3 z-20 p-2 rounded-xl border backdrop-blur-xs transition-all duration-200 cursor-pointer hover:scale-105 ${
               isSaved
                 ? 'bg-rose-500 text-white border-rose-600 shadow-md'
                 : 'bg-black/40 hover:bg-black/60 text-white border-white/20'
@@ -106,7 +115,7 @@ const StoreCard = ({ store = {}, onRate, isSaved = false, onToggleFavorite, savi
             {savingFavorite ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
-              <Heart className={`w-4 h-4 transition-transform ${isSaved ? 'fill-white text-white scale-110' : ''}`} />
+              <Heart className={`w-4 h-4 transition-transform duration-200 ${isSaved ? 'fill-white text-white scale-110' : ''} ${animateHeart ? 'heart-pop' : ''}`} />
             )}
           </button>
         )}

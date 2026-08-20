@@ -1,6 +1,7 @@
 const prisma = require('../utils/prisma');
 const { hashPassword } = require('../utils/hashUtils');
 const { createNotification } = require('./notificationService');
+const { analyzeStoreReviews } = require('./aiReviewService');
 
 class AdminError extends Error {
   constructor(message, statusCode) {
@@ -183,6 +184,7 @@ const getDashboardMetrics = async () => {
     roleDistribution,
     categoryAnalytics,
     cityAnalytics,
+    platformSentiment: analyzeStoreReviews(storePerformance.flatMap((s) => s.ratings || [])),
     storePerformance: storesWithPerformance,
     topStores: storesWithPerformance.slice(0, 10),
   };

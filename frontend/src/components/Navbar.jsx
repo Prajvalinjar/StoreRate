@@ -96,20 +96,25 @@ const Navbar = () => {
 
             {/* Desktop Center Global Navigation Links */}
             <div className="hidden lg:flex items-center space-x-6 text-xs font-semibold text-[#D0E2DB]">
-              <Link to="/" className="hover:text-white transition-colors">
+              <Link to="/" className={`transition-colors duration-150 relative py-1 ${location.pathname === '/' ? 'text-white font-bold' : 'hover:text-white'}`}>
                 Home
+                {location.pathname === '/' && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C9A24A] rounded-full" />}
               </Link>
-              <Link to="/stores" className="hover:text-white transition-colors">
+              <Link to="/stores" className={`transition-colors duration-150 relative py-1 ${location.pathname.startsWith('/stores') ? 'text-white font-bold' : 'hover:text-white'}`}>
                 Explore Stores
+                {location.pathname.startsWith('/stores') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C9A24A] rounded-full" />}
               </Link>
-              <Link to="/categories" className="hover:text-white transition-colors">
+              <Link to="/categories" className={`transition-colors duration-150 relative py-1 ${location.pathname.startsWith('/categories') ? 'text-white font-bold' : 'hover:text-white'}`}>
                 Categories
+                {location.pathname.startsWith('/categories') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C9A24A] rounded-full" />}
               </Link>
-              <Link to="/how-it-works" className="hover:text-white transition-colors">
+              <Link to="/how-it-works" className={`transition-colors duration-150 relative py-1 ${location.pathname.startsWith('/how-it-works') ? 'text-white font-bold' : 'hover:text-white'}`}>
                 How It Works
+                {location.pathname.startsWith('/how-it-works') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C9A24A] rounded-full" />}
               </Link>
-              <Link to="/about" className="hover:text-white transition-colors">
+              <Link to="/about" className={`transition-colors duration-150 relative py-1 ${location.pathname.startsWith('/about') ? 'text-white font-bold' : 'hover:text-white'}`}>
                 About Us
+                {location.pathname.startsWith('/about') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C9A24A] rounded-full" />}
               </Link>
             </div>
           </div>

@@ -59,10 +59,10 @@ const FeaturedStores = () => {
 
           <Link
             to="/stores"
-            className="inline-flex items-center space-x-2 text-xs font-bold text-[#173D32] hover:text-[#2F6654] transition-colors self-start md:self-auto"
+            className="group inline-flex items-center space-x-2 text-xs font-bold text-[#173D32] hover:text-[#2F6654] transition-colors self-start md:self-auto btn-interactive"
           >
             <span>Explore all businesses</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
           </Link>
         </div>
 
@@ -101,8 +101,16 @@ const FeaturedStores = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {validStores.map((store) => (
-              <StoreCard key={store.id} store={store} />
+            {validStores.map((store, index) => (
+              <div
+                key={store.id}
+                className={`transition-all duration-300 ease-out ${
+                  isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+                }`}
+                style={{ transitionDelay: `${index * 80}ms` }}
+              >
+                <StoreCard store={store} />
+              </div>
             ))}
           </div>
         )}

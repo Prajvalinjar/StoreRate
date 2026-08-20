@@ -29,16 +29,16 @@ const LandingNavbar = () => {
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8 text-xs font-semibold text-[#D0E2DB]">
-            <Link to="/stores" className="hover:text-white transition-colors">
+            <Link to="/stores" className="hover:text-white transition-colors duration-150 py-1 border-b-2 border-transparent hover:border-[#C9A24A]">
               Explore Stores
             </Link>
-            <a href="#how-it-works" className="hover:text-white transition-colors">
+            <a href="#how-it-works" className="hover:text-white transition-colors duration-150 py-1 border-b-2 border-transparent hover:border-[#C9A24A]">
               How It Works
             </a>
-            <a href="#for-businesses" className="hover:text-white transition-colors">
+            <a href="#for-businesses" className="hover:text-white transition-colors duration-150 py-1 border-b-2 border-transparent hover:border-[#C9A24A]">
               For Businesses
             </a>
-            <a href="#about" className="hover:text-white transition-colors">
+            <a href="#about" className="hover:text-white transition-colors duration-150 py-1 border-b-2 border-transparent hover:border-[#C9A24A]">
               About Us
             </a>
           </div>
@@ -48,7 +48,7 @@ const LandingNavbar = () => {
             {isAuthenticated ? (
               <Link
                 to="/dashboard"
-                className="inline-flex items-center space-x-2 px-5 py-2.5 bg-[#C9A24A] hover:bg-[#B59039] text-[#173D32] font-extrabold rounded-xl transition-all shadow-xs"
+                className="inline-flex items-center space-x-2 px-5 py-2.5 bg-[#C9A24A] hover:bg-[#B59039] text-[#173D32] font-extrabold rounded-xl transition-all shadow-xs btn-interactive"
               >
                 <span>Go to Portal</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -57,13 +57,13 @@ const LandingNavbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2.5 text-[#D0E2DB] hover:text-white font-semibold transition-colors"
+                  className="px-4 py-2.5 text-[#D0E2DB] hover:text-white font-semibold transition-colors duration-150"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
-                  className="inline-flex items-center space-x-1.5 px-5 py-2.5 bg-[#C9A24A] hover:bg-[#B59039] text-[#173D32] font-extrabold rounded-xl transition-all shadow-xs"
+                  className="inline-flex items-center space-x-1.5 px-5 py-2.5 bg-[#C9A24A] hover:bg-[#B59039] text-[#173D32] font-extrabold rounded-xl transition-all shadow-xs btn-interactive"
                 >
                   <span>Get Started</span>
                   <ArrowRight className="w-3.5 h-3.5" />

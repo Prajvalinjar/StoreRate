@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { getOwnerDashboard, createOwnerStore, postOwnerReply, deleteOwnerReply } from '../api/ownerService';
 import StarRating from '../components/StarRating';
+import AIReviewInsightsCard from '../components/AIReviewInsightsCard';
 import { formatStoreLocation } from '../utils/locationUtils';
 import { Store, Star, Users, MapPin, Mail, AlertCircle, RefreshCw, Award, TrendingUp, Sparkles, CheckCircle2, Clock, XCircle, Send, MessageSquare, CornerDownRight, Edit3, Trash2, ExternalLink } from 'lucide-react';
 
@@ -442,98 +443,161 @@ const OwnerDashboardPage = () => {
       {/* Tab 1: Overview */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2">
-              <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">
-                AVERAGE RATING
-              </span>
-              <div className="flex items-baseline space-x-2.5 pt-1">
+          {/* SECTION B — KEY PERFORMANCE INDICATORS */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            {/* Primary Highlight Metric: Average Rating */}
+            <div className="lg:col-span-4 bg-[#173D32] text-white border border-[#123027] rounded-2xl p-6 shadow-md flex flex-col justify-between space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold text-[#C9A24A] uppercase tracking-widest bg-[#235344] px-3 py-1 rounded-full border border-[#3E7D69]">
+                  PRIMARY REPUTATION KPI
+                </span>
+                <Award className="w-5 h-5 text-[#C9A24A]" />
+              </div>
+
+              <div className="space-y-1">
                 {storeData.averageRating !== null && storeData.averageRating !== undefined ? (
-                  <>
-                    <span className="text-3xl font-black text-[#C9A24A] tracking-tight leading-none">
+                  <div className="flex items-baseline space-x-3">
+                    <span className="text-4xl sm:text-5xl font-black text-[#C9A24A] tracking-tight">
                       {Number(storeData.averageRating).toFixed(1)}
                     </span>
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <StarRating value={storeData.averageRating} readOnly size="sm" />
-                      <span className="text-[10px] text-[#707873] block font-mono">5.0 benchmark</span>
+                      <span className="text-[11px] text-[#A3C2B6] font-mono block">5.0 Scale Benchmark</span>
                     </div>
-                  </>
+                  </div>
                 ) : (
-                  <span className="text-base font-semibold text-[#707873] italic">No ratings yet</span>
+                  <span className="text-lg font-semibold text-[#A3C2B6] italic">No ratings submitted yet</span>
                 )}
               </div>
-            </div>
 
-            <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2">
-              <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">
-                TOTAL REVIEWS
-              </span>
-              <div className="flex items-baseline space-x-2 pt-1">
-                <span className="text-3xl font-black text-[#171A18] tracking-tight leading-none">{storeData.totalRatings}</span>
-                <span className="text-xs text-[#707873]">submissions</span>
+              <div className="pt-3 border-t border-[#2F6654] text-xs text-[#D0E2DB]">
+                <span>Based on <strong>{storeData.totalRatings}</strong> customer ratings</span>
               </div>
             </div>
 
-            <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2">
-              <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">
-                OWNER RESPONSES
-              </span>
-              <div className="flex items-baseline space-x-2 pt-1">
-                <span className="text-3xl font-black text-[#173D32] tracking-tight leading-none">
-                  {ownerRepliesCount}
-                </span>
-                <span className="text-xs text-[#707873]">public replies</span>
+            {/* Supporting Compact Metrics Grid */}
+            <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">Total Ratings</span>
+                <div>
+                  <span className="text-3xl font-black text-[#171A18] tracking-tight">{storeData.totalRatings}</span>
+                  <p className="text-[11px] text-[#707873] mt-0.5 font-normal">Ratings submitted</p>
+                </div>
               </div>
-            </div>
 
-            <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs space-y-2">
-              <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">
-                RESPONSE RATE
-              </span>
-              <div className="flex items-baseline space-x-2 pt-1">
-                <span className="text-3xl font-black text-[#173D32] tracking-tight leading-none">
-                  {responseRate}%
-                </span>
-                <span className="text-xs text-[#707873]">of written reviews</span>
+              <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">Written Reviews</span>
+                <div>
+                  <span className="text-3xl font-black text-[#171A18] tracking-tight">{writtenReviewsCount}</span>
+                  <p className="text-[11px] text-[#707873] mt-0.5 font-normal">Customer reviews</p>
+                </div>
+              </div>
+
+              <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">Owner Replies</span>
+                <div>
+                  <span className="text-3xl font-black text-[#173D32] tracking-tight">{ownerRepliesCount}</span>
+                  <p className="text-[11px] text-[#707873] mt-0.5 font-normal">Public responses</p>
+                </div>
+              </div>
+
+              <div className="bg-white border border-[#E2E5DF] rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">Response Rate</span>
+                <div>
+                  <span className="text-3xl font-black text-[#C9A24A] tracking-tight">{responseRate}%</span>
+                  <p className="text-[11px] text-[#707873] mt-0.5 font-normal">Review response rate</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-[#E7F0EB] border border-[#CDE0D5] rounded-2xl p-6 shadow-xs space-y-3 text-left">
-            <div className="flex items-center space-x-2">
-              <Sparkles className="w-5 h-5 text-[#C9A24A]" />
-              <h2 className="font-display text-base font-bold text-[#171A18]">Store Reputation Telemetry</h2>
+          {/* SECTION C & D — RATING DISTRIBUTION & RESPONSE ANALYTICS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Rating Distribution Horizontal Bars */}
+            <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-[#E2E5DF] pb-3">
+                <h3 className="font-display text-base font-bold text-[#171A18] flex items-center space-x-2">
+                  <BarChart3 className="w-4 h-4 text-[#173D32]" />
+                  <span>Rating Breakdown</span>
+                </h3>
+                <span className="text-xs text-[#707873] font-mono">
+                  {storeData.totalRatings} total {storeData.totalRatings === 1 ? 'rating' : 'ratings'}
+                </span>
+              </div>
+
+              {storeData.totalRatings > 0 ? (
+                <div className="space-y-2.5">
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count = distribution[star] || 0;
+                    const pct = storeData.totalRatings > 0 ? Math.round((count / storeData.totalRatings) * 100) : 0;
+                    return (
+                      <div key={star} className="flex items-center space-x-3 text-xs">
+                        <span className="w-10 font-bold text-[#171A18] flex items-center space-x-1 shrink-0 font-mono">
+                          <span>{star}</span>
+                          <Star className="w-3 h-3 fill-[#C9A24A] text-[#C9A24A]" />
+                        </span>
+                        <div className="flex-1 h-2 bg-[#E7F0EB] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#C9A24A] to-[#173D32] rounded-full transition-all duration-300"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="w-12 text-right font-mono font-bold text-[#171A18] shrink-0">{pct}%</span>
+                        <span className="w-10 text-right text-[11px] text-[#707873] font-mono shrink-0">({count})</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="p-6 text-center space-y-1 bg-[#F7F6F1] rounded-xl border border-[#E2E5DF]">
+                  <p className="text-xs font-bold text-[#171A18]">No customer ratings yet</p>
+                  <p className="text-[11px] text-[#707873]">Your rating distribution will appear here after customers review your store.</p>
+                </div>
+              )}
             </div>
 
-            {storeData.totalRatings > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-[#173D32] pt-1">
-                <div className="bg-white/80 p-3.5 rounded-xl border border-[#CDE0D5] space-y-1">
-                  <p className="font-bold text-[#171A18]">Overall Rating Score</p>
-                  <p className="text-[#707873]">
-                    Your store maintains an average score of <strong className="text-[#C9A24A]">{Number(storeData.averageRating).toFixed(1)}/5.0</strong> from {storeData.totalRatings} customer ratings.
-                  </p>
-                </div>
-
-                <div className="bg-white/80 p-3.5 rounded-xl border border-[#CDE0D5] space-y-1">
-                  <p className="font-bold text-[#171A18]">Owner Engagement</p>
-                  <p className="text-[#707873]">
-                    You have posted public responses to <strong className="text-[#173D32]">{ownerRepliesCount}</strong> customer reviews ({responseRate}% response rate).
-                  </p>
-                </div>
-
-                <div className="bg-white/80 p-3.5 rounded-xl border border-[#CDE0D5] space-y-1">
-                  <p className="font-bold text-[#171A18]">Customer Satisfaction</p>
-                  <p className="text-[#707873]">
-                    <strong className="text-[#173D32]">{fourOrFiveStarPercent}%</strong> of customers left a positive rating of 4 or 5 stars for your store.
-                  </p>
-                </div>
+            {/* Response Analytics Breakdown */}
+            <div className="bg-white border border-[#E2E5DF] rounded-2xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-[#E2E5DF] pb-3">
+                <h3 className="font-display text-base font-bold text-[#171A18] flex items-center space-x-2">
+                  <MessageSquare className="w-4 h-4 text-[#173D32]" />
+                  <span>Response Analytics</span>
+                </h3>
+                <span className="text-xs font-mono font-bold text-[#173D32] bg-[#E7F0EB] px-2.5 py-0.5 rounded-full border border-[#CDE0D5]">
+                  {responseRate}% Response Rate
+                </span>
               </div>
-            ) : (
-              <p className="text-xs text-[#707873]">
-                Your store does not have customer ratings yet. Reputation insights will update automatically as ratings are submitted by community members.
-              </p>
-            )}
+
+              {writtenReviewsCount > 0 ? (
+                <div className="grid grid-cols-2 gap-3 text-center text-xs">
+                  <div className="p-3 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl space-y-1">
+                    <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">Written Reviews</span>
+                    <span className="text-2xl font-black text-[#171A18]">{writtenReviewsCount}</span>
+                  </div>
+                  <div className="p-3 bg-[#E7F0EB] border border-[#CDE0D5] rounded-xl space-y-1">
+                    <span className="text-[10px] font-bold text-[#173D32] uppercase tracking-wider block">Replies Published</span>
+                    <span className="text-2xl font-black text-[#173D32]">{ownerRepliesCount}</span>
+                  </div>
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
+                    <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">Awaiting Response</span>
+                    <span className="text-2xl font-black text-amber-900">{Math.max(0, writtenReviewsCount - ownerRepliesCount)}</span>
+                  </div>
+                  <div className="p-3 bg-[#F7F6F1] border border-[#E2E5DF] rounded-xl space-y-1">
+                    <span className="text-[10px] font-bold text-[#707873] uppercase tracking-wider block">Satisfaction</span>
+                    <span className="text-2xl font-black text-[#C9A24A]">{fourOrFiveStarPercent}%</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 text-center space-y-1 bg-[#F7F6F1] rounded-xl border border-[#E2E5DF]">
+                  <p className="text-xs font-bold text-[#171A18]">No written reviews yet</p>
+                  <p className="text-[11px] text-[#707873]">Response metrics will calculate automatically as written customer reviews arrive.</p>
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* AI Customer Intelligence Card */}
+          <AIReviewInsightsCard aiInsights={storeData.aiInsights} title="AI Customer Intelligence" />
         </div>
       )}
 
@@ -578,9 +642,23 @@ const OwnerDashboardPage = () => {
 
                     {/* Customer Written Review Text */}
                     {r.review ? (
-                      <p className="text-xs text-[#171A18] font-normal leading-relaxed bg-white p-3 rounded-xl border border-[#E2E5DF] whitespace-pre-wrap">
-                        "{r.review}"
-                      </p>
+                      <div className="space-y-1.5">
+                        <p className="text-xs text-[#171A18] font-normal leading-relaxed bg-white p-3 rounded-xl border border-[#E2E5DF] whitespace-pre-wrap">
+                          "{r.review}"
+                        </p>
+                        {r.aiTag && (
+                          <div className="flex items-center space-x-1.5 text-[10px]">
+                            <span className="font-mono text-[#707873] uppercase font-bold">AI Tag:</span>
+                            <span className={`px-2 py-0.5 rounded font-bold border ${
+                              r.aiTag.sentiment === 'POSITIVE' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                              r.aiTag.sentiment === 'NEGATIVE' ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                              'bg-slate-50 text-slate-700 border-slate-200'
+                            }`}>
+                              {r.aiTag.sentiment} · {r.aiTag.theme}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <p className="text-xs text-[#9CA59E] italic">No written review provided.</p>
                     )}
